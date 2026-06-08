@@ -1,0 +1,4 @@
+Loss of energy depending on the type of movement
+
+
+Melhorar geracao de mapa usando clusters e hotspots
