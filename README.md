@@ -1,6 +1,7 @@
 # Celmata
 
-<img width="200" height="200" alt="celmata" src="https://github.com/user-attachments/assets/56a67342-afc9-4e46-9955-d88bd189a832" />
+<img width="331" height="137" alt="celmata" src="https://github.com/user-attachments/assets/c3164767-cb5c-4daf-8584-560d0e893559" />
+
 
 Celmata is a terminal-based ecosystem simulator written in C, inspired by cellular automata and artificial life research. The core idea being that complex emergent behavior can arise from a grid of simple, local rules.
 
