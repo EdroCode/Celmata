@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+
 static int is_close(Rabbit *a, Rabbit *b) {
     return abs(a->x - b->x) <= 1 && abs(a->y - b->y) <= 1;
 }
@@ -31,6 +32,9 @@ void initRabbits(RabbitList *list, int count, int mapWidth, int mapHeight) {
         list->rabbits[i].birthed = false;
 
         list->rabbits[i].generation = 0;
+
+        list->rabbits[i].cur_state = IDLE;
+
         
     }
 }
@@ -56,8 +60,14 @@ void kill_rabbit(RabbitList *list, int i) {
     list->count--;
 }
 
-void update_rabbits(Map *m, RabbitList *list, GameState *state) {
+static void birth() {
 
+}
+
+
+
+
+/*
 
     for (int i = 0; i < list->count; i++) {
 
@@ -143,7 +153,7 @@ void update_rabbits(Map *m, RabbitList *list, GameState *state) {
                 baby.x = a->x;
                 baby.y = a->y;
 
-                /* inheritance */
+                
                 baby.max_energy = (rand() % 2) ? a->max_energy : b->max_energy;
                 baby.energy = baby.max_energy;
 
@@ -159,8 +169,7 @@ void update_rabbits(Map *m, RabbitList *list, GameState *state) {
                 baby.speed = clamp(baby.speed, 1, 5);
                 baby.max_energy = clamp(baby.max_energy, 2, 120);
 
-                baby.generation =
-                    (a->generation > b->generation ? a->generation : b->generation) + 1;
+                baby.generation = state->max_generation + 1;
 
                 baby.cooldown = 10;
                 baby.birthed = true;
@@ -174,17 +183,210 @@ void update_rabbits(Map *m, RabbitList *list, GameState *state) {
                 add_rabbit(list, baby);
 
                 state->total_birthed++;
+                if (baby.generation > state->max_generation) state->max_generation = baby.generation;
             }
         }
     }
 
     for (int i = 0; i < list->count; ) {
         if (list->rabbits[i].energy <= 0) {
+            state->total_dead++;
             kill_rabbit(list, i);
         } else {
             i++;
         }
     }
+*/
+
+typedef struct Pos {
+    int x;
+    int y;
+} Pos;
+
+// Looks at neighboors and selects a random grass cell
+Pos get_grass_near(Map *m, Pos p)
+{
+    Pos grass_cells[8];
+    int count = 0;
+
+    for (int dy = -1; dy <= 1; dy++) {
+        for (int dx = -1; dx <= 1; dx++) {
+
+            if (dx == 0 && dy == 0)
+                continue;
+
+            int nx = p.x + dx;
+            int ny = p.y + dy;
+
+            if (nx < 0 || ny < 0 || nx >= m->width || ny >= m->height)
+                continue;
+
+            if (m->grid[ny][nx].grass) {
+                grass_cells[count].x = nx;
+                grass_cells[count].y = ny;
+                count++;
+            }
+        }
+    }
+
+    if (count == 0) {
+        Pos invalid = {-1, -1};
+        return invalid;
+    }
+
+    int r = rand() % count;
+    return grass_cells[r];
+}
+
+Pos get_random_pos(Map *m, Pos p)
+{
+    Pos positions[8];
+    int count = 0;
+
+    for (int dy = -1; dy <= 1; dy++) {
+        for (int dx = -1; dx <= 1; dx++) {
+
+            if (dx == 0 && dy == 0)
+                continue;
+
+            int nx = p.x + dx;
+            int ny = p.y + dy;
+
+            if (nx < 0 || ny < 0 || nx >= m->width || ny >= m->height)
+                continue;
+
+            if (m->grid[ny][nx].grass) {
+                positions[count].x = nx;
+                positions[count].y = ny;
+                count++;
+            }
+        }
+    }
+
+    if (count == 0) {
+        Pos invalid = {-1, -1};
+        return invalid;
+    }
+
+    int r = rand() % count;
+    return positions[r];
+}
+#include <stdio.h>
+
+void process_rabbit(Map *m, Rabbit *rabbit)
+{
+    Pos rabbit_p = {rabbit->x, rabbit->y};
+    Pos target;
+
+    int energy_factor = (rabbit->energy * 100) / rabbit->max_energy;
+
+    for (int j = 0; j < rabbit->speed; j++) {
+
+        if (energy_factor <= 30)
+        {
+            rabbit->cur_state = SEEK;
+
+            target = get_grass_near(m, rabbit_p);
+
+            if (target.x != -1 && target.y != -1)
+            {
+                rabbit->x = target.x;
+                rabbit->y = target.y;
+
+                if (m->grid[rabbit->y][rabbit->x].grass)
+                {
+                    m->grid[rabbit->y][rabbit->x].grass = 0;
+                    rabbit->energy += 5;
+                }
+            }
+        }
+
+        else if (energy_factor >= 80)
+        {
+            if ((rand() % 100) < REPRODUCE_CHANCE && rabbit->cooldown == 0)
+            {
+                rabbit->cur_state = REPRODUCE;
+                rabbit->cooldown = 5;
+            }
+            else
+            {
+                rabbit->cur_state = MOVE;
+
+                target = get_random_pos(m, rabbit_p);
+
+                if (target.x != -1 && target.y != -1)
+                {
+                    rabbit->x = target.x;
+                    rabbit->y = target.y;
+
+                    if (m->grid[rabbit->y][rabbit->x].grass)
+                    {
+                        m->grid[rabbit->y][rabbit->x].grass = 0;
+                        rabbit->energy += 5;
+                    }
+                }
+            }
+        }
+
+        else
+        {
+            rabbit->cur_state = MOVE;
+
+            target = get_grass_near(m, rabbit_p);
+
+            if (target.x != -1 && target.y != -1)
+            {
+                rabbit->x = target.x;
+                rabbit->y = target.y;
+
+                if (m->grid[rabbit->y][rabbit->x].grass)
+                {
+                    m->grid[rabbit->y][rabbit->x].grass = 0;
+                    rabbit->energy += 5;
+                }
+            }
+            else
+            {
+                target = get_random_pos(m, rabbit_p);
+
+                if (target.x != -1 && target.y != -1)
+                {
+                    rabbit->x = target.x;
+                    rabbit->y = target.y;
+                }
+            }
+        }
+    }
+    
+    rabbit->energy -= 1;
+
+    if (rabbit->energy < 0)
+        rabbit->energy = 0;
+
+    if (rabbit->energy > rabbit->max_energy)
+        rabbit->energy = rabbit->max_energy;
+
+    if (rabbit->cooldown > 0)
+        rabbit->cooldown--;
+
+    energy_factor = (rabbit->energy * 100) / rabbit->max_energy;
+
+    printf("%d\n", energy_factor);
+}
+
+
+void update_rabbits(Map *m, RabbitList *list, GameState *state) {
+
+    for (int i = 0; i < list->count; i++) {
+        if (list->rabbits[i].energy <= 0)  
+        {
+            kill_rabbit(list, i);
+            state->total_dead++; 
+
+        }
+        process_rabbit(m, &list->rabbits[i]);
+    }
+
 }
 
 void freeRabbits(RabbitList *list) {

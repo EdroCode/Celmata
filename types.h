@@ -5,24 +5,24 @@
 #define SEED 1231231
 #define SEED_BASED false
 
-#define GAME_SPEED 100 // In ms (1000 - 1s) (5000 - 1/2s)
+#define GAME_SPEED 10 // In ms (1000 - 1s) (5000 - 1/2s)
 
 // World 
-#define MAP_HEIGHT 100
-#define MAP_WIDTH  100
-#define START_RABBITS 0
-#define START_GRASS_CHANCE 20
-#define GRASS_CHANCE 0 // in %
-#define GRASS_NEIGHBOOR_CHANCE_MULTIPLIER 1
-#define GRASS_DECAY 10
+#define MAP_HEIGHT 18
+#define MAP_WIDTH  18
+#define START_RABBITS 5
+#define START_GRASS_CHANCE 1
+#define GRASS_CHANCE 1 // in %
+#define GRASS_NEIGHBOOR_CHANCE_MULTIPLIER 3
+#define GRASS_DECAY 20
 
 // Rabbit
 #define TIRENESS 40 // Chance of losing energy
 #define MAX_START_ENERGY 60
 #define MAX_START_VISION 1
 #define MAX_START_SPEED 2
-#define MUTATION_CHANCE 90
-#define REPRODUCE_CHANCE 100
+#define MUTATION_CHANCE 20
+#define REPRODUCE_CHANCE 10
 
 
 typedef struct Cell {
@@ -31,6 +31,13 @@ typedef struct Cell {
     bool grass;
     int decay;
 } Cell;
+
+typedef enum {
+    IDLE,
+    SEEK,
+    MOVE,
+    REPRODUCE
+} RabbitState;
 
 typedef struct Rabbit {
     int x,y; // Posicao
@@ -42,6 +49,7 @@ typedef struct Rabbit {
     bool birthed;
     int generation;
     int dir;
+    RabbitState cur_state;
 } Rabbit;
 
 typedef struct {
@@ -61,6 +69,8 @@ typedef struct GameState {
     int ticks;
     int game_speed;
     int total_birthed;
+    int total_dead;
+    int max_generation;
 } GameState;
 
 // MainLoop
@@ -74,6 +84,7 @@ void freeMap(Map *map);
 // User Interface
 void clear_screen(void);
 void draw_map (Map m, RabbitList *list, GameState *state);
+void print_stats(GameState *gs, RabbitList *rabbits);
 
 // Game Logic
 

@@ -10,7 +10,6 @@ void main_loop(Map m, RabbitList *rabbits, GameState *state) {
 
     struct timespec ts;
 
-
     ts.tv_sec = GAME_SPEED / 1000;
     ts.tv_nsec = (GAME_SPEED % 1000) * 1000000L;
 
@@ -27,7 +26,10 @@ void main_loop(Map m, RabbitList *rabbits, GameState *state) {
 
         state->ticks++;
 
-//        if (rabbits->count <= 0) return;
+        if (rabbits->count <= 0) {
+            print_stats(state,rabbits);
+            return;
+        }
         nanosleep(&ts, NULL);
     }
 }
