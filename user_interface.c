@@ -52,12 +52,11 @@ static void draw_stats(RabbitList *rabbits) {
         } else {
             printf(RED);
         }
-
-        printf("Rabbit %d | (%s) | Pos=(%d,%d) | Energy=%d | Vision=%d | Speed=%d\n",
+        printf("Rabbit %d | (%s) | Pos=(%d,%d) | Energy=%d%% | Vision=%d | Speed=%d\n",
             i,
             state_to_string(r->cur_state),
             r->x, r->y,
-            (r->energy*100/r->max_energy),
+            (r->energy * 100) / r->max_energy,
             r->vision,
             r->speed
         );
@@ -101,17 +100,19 @@ void draw_map(Map m, RabbitList *list, GameState *state) {
         for (int x = 0; x < m.width; x++) {
 
             int hasRabbit = 0;
+            int love = 0;
 
             for (int k = 0; k < list->count; k++) {
                 if (list->rabbits[k].x == x &&
                     list->rabbits[k].y == y) {
                     hasRabbit = 1;
+                    love = (list->rabbits[k].cooldown > 0) ? 1 : 0;
                     break;
                 }
             }
 
             if (hasRabbit) {
-                printf("🐇");
+                love ? printf("💕") : printf("🐇");
             }
             else if (m.grid[y][x].grass) {
                 printf("🌿");

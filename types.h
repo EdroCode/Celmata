@@ -5,15 +5,15 @@
 #define SEED 1231231
 #define SEED_BASED false
 
-#define GAME_SPEED 10 // In ms (1000 - 1s) (5000 - 1/2s)
+#define GAME_SPEED 500 // In ms (1000 - 1s) (5000 - 1/2s)
 
 // World 
-#define MAP_HEIGHT 18
-#define MAP_WIDTH  18
+#define MAP_HEIGHT 10
+#define MAP_WIDTH  10
 #define START_RABBITS 5
-#define START_GRASS_CHANCE 1
-#define GRASS_CHANCE 1 // in %
-#define GRASS_NEIGHBOOR_CHANCE_MULTIPLIER 3
+#define START_GRASS_CHANCE 40
+#define GRASS_CHANCE 10
+#define GRASS_NEIGHBOOR_CHANCE_MULTIPLIER 1
 #define GRASS_DECAY 20
 
 // Rabbit
@@ -24,6 +24,7 @@
 #define MUTATION_CHANCE 20
 #define REPRODUCE_CHANCE 10
 
+typedef struct { int x, y; } Pos;
 
 typedef struct Cell {
     int x;
