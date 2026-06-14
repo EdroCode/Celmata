@@ -31,6 +31,9 @@ void initMap(Map *map, int width, int height) {
     map->width = width;
     map->height = height;
 
+    int num_clusters = width*height / 
+    int initial_clusters[
+    
     map->grid = malloc(height * sizeof(Cell *));
 
     for (int y = 0; y < height; y++) {
