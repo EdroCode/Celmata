@@ -5,19 +5,18 @@
 #define SEED 1231231
 #define SEED_BASED false
 
-#define GAME_SPEED 500 // In ms (1000 - 1s) (5000 - 1/2s)
+#define GAME_SPEED 50 // In ms (1000 - 1s) (5000 - 1/2s)
 
 // World 
-#define MAP_HEIGHT 10
-#define MAP_WIDTH  10
-#define START_RABBITS 5
+#define MAP_HEIGHT 20
+#define MAP_WIDTH  20
+#define START_RABBITS 1
 #define START_GRASS_CHANCE 40
-#define GRASS_CHANCE 10
+#define GRASS_CHANCE 1
 #define GRASS_NEIGHBOOR_CHANCE_MULTIPLIER 1
 #define GRASS_DECAY 20
 
 // Rabbit
-#define TIRENESS 40 // Chance of losing energy
 #define MAX_START_ENERGY 60
 #define MAX_START_VISION 1
 #define MAX_START_SPEED 2

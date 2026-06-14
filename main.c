@@ -6,6 +6,7 @@
 
 
 int main() {
+
     SEED_BASED ? srand(SEED) : srand(time(NULL));
 
     Map m;

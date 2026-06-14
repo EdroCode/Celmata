@@ -157,6 +157,8 @@ static void try_reproduce(Map *m, RabbitList *list, Rabbit *r, GameState *state)
     state->total_birthed++;
     if (baby.generation > state->max_generation)
         state->max_generation = baby.generation;
+
+    r->energy = r->energy / 2;
 }
 
 static void move_to(Map *m, Rabbit *r, Pos target) {
@@ -208,7 +210,7 @@ void process_rabbit(Map *m, RabbitList *list, Rabbit *r, GameState *state) {
             move_to(m, r, target);
         }
         
-        r->energy -= 1;
+        r->energy -= 2;
         
         rp.x = r->x;
         rp.y = r->y;
