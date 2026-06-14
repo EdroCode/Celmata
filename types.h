@@ -5,16 +5,17 @@
 #define SEED 1231231
 #define SEED_BASED false
 
-#define GAME_SPEED 50 // In ms (1000 - 1s) (5000 - 1/2s)
+#define GAME_SPEED 200 // In ms (1000 - 1s) (5000 - 1/2s)
 
 // World 
 #define MAP_HEIGHT 20
 #define MAP_WIDTH  20
-#define START_RABBITS 1
+#define START_RABBITS 8
 #define START_GRASS_CHANCE 40
-#define GRASS_CHANCE 1
+#define GRASS_CHANCE 25
 #define GRASS_NEIGHBOOR_CHANCE_MULTIPLIER 1
 #define GRASS_DECAY 20
+#define GRASS_COOLDOWN 5
 
 // Rabbit
 #define MAX_START_ENERGY 60
@@ -29,6 +30,7 @@ typedef struct Cell {
     int x;
     int y;
     bool grass;
+    int cooldown;
     int decay;
 } Cell;
 

@@ -69,11 +69,14 @@ void update_map(Map *m) {
                 int chance = GRASS_CHANCE + count * GRASS_NEIGHBOOR_CHANCE_MULTIPLIER;
                 if (chance > 100) chance = 100;
 
-                if (rand() % 100 < chance) {
+                if (rand() % 100 < chance && cell->cooldown <= 0) {
                     cell->grass = true;
                     cell->decay = GRASS_DECAY + rand() % 10;
+                    cell->cooldown = GRASS_COOLDOWN;
                 }
+
             } else {
+                cell->cooldown--;
                 if (--cell->decay <= 0) {
                     cell->grass = false;
                 }
