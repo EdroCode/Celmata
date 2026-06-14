@@ -16,7 +16,7 @@ void initRabbits(RabbitList *list, int count, int mapWidth, int mapHeight) {
     list->capacity = count;
 
     for (int i = 0; i < count; i++) {
-        list->rabbits[i].max_energy = 5 + rand() % MAX_START_ENERGY;
+        list->rabbits[i].max_energy = 30 + rand() % MAX_START_ENERGY;
         list->rabbits[i].energy     = list->rabbits[i].max_energy;
         list->rabbits[i].vision     = 1 + rand() % MAX_START_VISION;
         list->rabbits[i].speed      = 1 + rand() % MAX_START_SPEED;
@@ -157,6 +157,7 @@ static void try_reproduce(Map *m, RabbitList *list, Rabbit *r, GameState *state)
     state->total_birthed++;
     if (baby.generation > state->max_generation)
         state->max_generation = baby.generation;
+
 }
 
 static void move_to(Map *m, Rabbit *r, Pos target) {
@@ -165,7 +166,7 @@ static void move_to(Map *m, Rabbit *r, Pos target) {
     r->y = target.y;
     if (m->grid[r->y][r->x].grass) {
         m->grid[r->y][r->x].grass = 0;
-        r->energy += 5;
+        r->energy += 8;
 
         if (r->energy > r->max_energy)
             r->energy = r->max_energy;
