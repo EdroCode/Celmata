@@ -30,9 +30,6 @@ static Cell* get_neighbors(Map *m, int x, int y) {
 void initMap(Map *map, int width, int height) {
     map->width = width;
     map->height = height;
-
-    int num_clusters = width*height / 
-    int initial_clusters[
     
     map->grid = malloc(height * sizeof(Cell *));
 
