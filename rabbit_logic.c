@@ -166,6 +166,7 @@ static void move_to(Map *m, Rabbit *r, Pos target) {
     r->y = target.y;
     if (m->grid[r->y][r->x].grass) {
         m->grid[r->y][r->x].grass = 0;
+        m->grid[r->y][r->x].cooldown = GRASS_COOLDOWN;
         r->energy += 8;
 
         if (r->energy > r->max_energy)
@@ -174,11 +175,11 @@ static void move_to(Map *m, Rabbit *r, Pos target) {
 }
 
 void process_rabbit(Map *m, RabbitList *list, Rabbit *r, GameState *state) {
-    int energy_pct = (r->energy * 100) / r->max_energy;
     Pos rp = {r->x, r->y};
-
+    
     for (int step = 0; step < r->speed; step++) {
-
+        int energy_pct = (r->energy * 100) / r->max_energy;
+        
         if (energy_pct <= 30) {
             r->cur_state = SEEK;
 
@@ -209,7 +210,7 @@ void process_rabbit(Map *m, RabbitList *list, Rabbit *r, GameState *state) {
             move_to(m, r, target);
         }
         
-        r->energy -= 1;
+        r->energy -= ENERGY_PENALTY;
         
         rp.x = r->x;
         rp.y = r->y;

@@ -12,7 +12,7 @@ void clear_screen(void) {
     fflush(stdout);
 }
 
-const char *state_to_string(RabbitState state)
+const char *state_to_string(State state)
 {
     switch (state) {
         case IDLE: return "IDLE";
@@ -67,7 +67,7 @@ static void draw_stats(RabbitList *rabbits) {
     print_separator();
 }
 
-void draw_map(Map m, RabbitList *list, GameState *state) {
+void draw_map(Map m, RabbitList *list, WolfList *wolfs, GameState *state) {
 
 
     clear_screen();
@@ -100,6 +100,7 @@ void draw_map(Map m, RabbitList *list, GameState *state) {
         for (int x = 0; x < m.width; x++) {
 
             int hasRabbit = 0;
+            int hasWolf = 0;
             int love = 0;
 
             for (int k = 0; k < list->count; k++) {
@@ -111,14 +112,32 @@ void draw_map(Map m, RabbitList *list, GameState *state) {
                 }
             }
 
-            if (hasRabbit) {
-                love ? printf("💕") : printf("🐇");
+            for (int k = 0; k < wolfs->count; k++) {
+                if (wolfs->pack[k].x == x &&
+                    wolfs->pack[k].y == y) {
+                    hasWolf = 1;
+                    love = (wolfs->pack[k].cooldown > 0) ? 1 : 0;
+                    break;
+                }
             }
-            else if (m.grid[y][x].grass) {
-                printf("🌿");
+
+            if (love) {
+                printf("💕");
             }
             else {
-                printf("· ");
+                if (hasWolf) {
+                    printf("🐺");
+                }
+                else if (hasRabbit) {
+                    printf("🐇");
+                }
+                else if (m.grid[y][x].grass) {
+                    printf("🌿");
+                }
+                else {
+                    printf("· ");
+                }
+                
             }
         }
 

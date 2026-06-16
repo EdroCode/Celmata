@@ -5,18 +5,19 @@
 #define SEED 1231231
 #define SEED_BASED false
 
-#define GAME_SPEED 200 // In ms (1000 - 1s) (5000 - 1/2s)
+#define GAME_SPEED 1 // In ms (1000 - 1s) (5000 - 1/2s)
 
 // World 
 #define MAP_HEIGHT 20
 #define MAP_WIDTH  20
+#define START_WOLFS 8
 #define START_RABBITS 8
 #define START_GRASS_CHANCE 40
 #define GRASS_PER_CELLS_RATIO 0.10
-#define GRASS_CHANCE 10
+#define GRASS_CHANCE 5
 #define GRASS_NEIGHBOOR_CHANCE_MULTIPLIER 1
-#define GRASS_DECAY 20
-#define GRASS_COOLDOWN 5
+#define GRASS_DECAY 15
+#define GRASS_COOLDOWN 8
 
 // Rabbit
 #define MAX_START_ENERGY 60
@@ -24,6 +25,10 @@
 #define MAX_START_SPEED 2
 #define MUTATION_CHANCE 20
 #define REPRODUCE_CHANCE 10
+#define ENERGY_PENALTY 4
+
+// Wolfs
+
 
 typedef struct { int x, y; } Pos;
 
@@ -40,7 +45,25 @@ typedef enum {
     SEEK,
     MOVE,
     REPRODUCE
-} RabbitState;
+} State;
+
+typedef struct Wolf {
+    int x,y; // Posicao
+    int energy; // Rabbit energy
+    int max_energy; // Rabbit max energy
+    int vision; //  células consegue ver à sua volta
+    int speed;  // Quantos movimentos pode fazer por tick
+    int cooldown;
+    bool birthed;
+    int generation;
+    State cur_state;
+} Wolf;
+
+typedef struct {
+    Wolf *pack; // A pack is a list of wolfs
+    int count;
+    int capacity;
+} WolfList;
 
 typedef struct Rabbit {
     int x,y; // Posicao
@@ -52,7 +75,7 @@ typedef struct Rabbit {
     bool birthed;
     int generation;
     int dir;
-    RabbitState cur_state;
+    State cur_state;
 } Rabbit;
 
 typedef struct {
@@ -77,7 +100,7 @@ typedef struct GameState {
 } GameState;
 
 // MainLoop
-void main_loop(Map m, RabbitList *rabbits, GameState *state);
+void main_loop(Map m, RabbitList *rabbits,WolfList *wolfs, GameState *state);
 
 // Map
 void initMap(Map *map, int width, int height);
@@ -86,7 +109,7 @@ void freeMap(Map *map);
 
 // User Interface
 void clear_screen(void);
-void draw_map (Map m, RabbitList *list, GameState *state);
+void draw_map(Map m, RabbitList *list, WolfList *pack, GameState *state);
 void print_stats(GameState *gs, RabbitList *rabbits);
 
 // Game Logic
@@ -97,3 +120,7 @@ void add_rabbit(RabbitList *rabs, Rabbit rabbit);
 void kill_rabbit(RabbitList *rabs, int i);
 void update_rabbits(Map *m, RabbitList *rabs, GameState *state);
 void freeRabbits(RabbitList *list);
+
+// Wolfs
+void initWolfs(WolfList *list, int count, int mapWidth, int mapHeight);
+void freeWolfs(WolfList *list);

@@ -55,7 +55,7 @@ void update_map(Map *m) {
             Cell *cell = &m->grid[y][x];
 
             if (!cell->grass) {
-
+                if (cell->cooldown > 0) { cell->cooldown--; continue; }
                 int count = 0;
                 Cell *cells = get_neighbors(m, x, y);
 
@@ -76,7 +76,6 @@ void update_map(Map *m) {
                 }
 
             } else {
-                cell->cooldown--;
                 if (--cell->decay <= 0) {
                     cell->grass = false;
                 }

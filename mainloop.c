@@ -6,7 +6,7 @@
 #include <time.h>
 #include "types.h"
 
-void main_loop(Map m, RabbitList *rabbits, GameState *state) {
+void main_loop(Map m, RabbitList *rabbits, WolfList *wolfs, GameState *state) {
 
     FILE *log_file = fopen("celmata_log.csv", "w");
     fprintf(log_file, "tick,population,grass_count,avg_energy,avg_speed,avg_max_energy,max_generation,total_born,total_dead\n");
@@ -25,7 +25,7 @@ void main_loop(Map m, RabbitList *rabbits, GameState *state) {
 
         update_rabbits(&m, rabbits, state);
 
-        draw_map(m, rabbits, state);
+        draw_map(m, rabbits, wolfs, state);
 
         state->ticks++;
 
