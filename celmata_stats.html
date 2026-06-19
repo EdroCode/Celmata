@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Celmata — Ecosystem Stats</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0c0e12;
+  --surface:  #13161c;
+  --card:     #181c24;
+  --border:   rgba(255,255,255,0.06);
+  --border2:  rgba(255,255,255,0.12);
+  --text:     #dde1e8;
+  --muted:    #5a6072;
+  --faint:    #2a2f3a;
+
+  --green:    #2ecc8e;
+  --green2:   #1a7a55;
+  --amber:    #f0a830;
+  --blue:     #4d9de0;
+  --red:      #e05555;
+  --purple:   #9b84f0;
+  --teal:     #38c4c4;
+
+  --font-data: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  --font-ui:   system-ui, -apple-system, sans-serif;
+}
+
+html { font-size: 14px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  min-height: 100vh;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* ── Layout ── */
+.page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--faint);
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.logo-mark {
+  width: 36px; height: 36px;
+  background: var(--green2);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: 0;
+  flex-shrink: 0;
+}
+.header h1 {
+  font-family: var(--font-ui);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0;
+}
+.header h1 span { color: var(--muted); font-weight: 400; }
+.file-badge {
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: var(--faint);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  padding: 4px 10px;
+  display: none;
+}
+
+/* ── Drop zone ── */
+#dropZone {
+  border: 1.5px dashed var(--faint);
+  border-radius: 12px;
+  padding: 4rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 2rem;
+}
+#dropZone:hover, #dropZone.over {
+  border-color: var(--green);
+  background: rgba(46,204,142,0.04);
+}
+#dropZone .hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+  font-family: var(--font-data);
+}
+#dropZone strong { color: var(--text); font-weight: 500; }
+#dropZone input { display: none; }
+.drop-icon {
+  width: 44px; height: 44px;
+  border: 1.5px solid var(--border2);
+  border-radius: 10px;
+  margin: 0 auto 1rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+}
+
+/* ── Main content ── */
+#main { display: none; }
+
+/* ── Metrics row ── */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 1.75rem;
+}
+.metric {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  position: relative;
+  overflow: hidden;
+}
+.metric::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent-color, transparent);
+}
+.metric .m-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-family: var(--font-ui);
+}
+.metric .m-val {
+  font-family: var(--font-data);
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: var(--val-color, var(--text));
+  line-height: 1;
+}
+.metric .m-sub {
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 5px;
+  font-family: var(--font-data);
+}
+
+/* ── Section label ── */
+.section-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--faint);
+}
+
+/* ── Chart grid ── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.4rem 1rem;
+}
+.chart-card.span2 { grid-column: 1 / -1; }
+
+.chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+.chart-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+.chart-sub {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 2px;
+  font-family: var(--font-data);
+}
+.legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-family: var(--font-data);
+}
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.legend-dash {
+  width: 16px; height: 2px;
+  border-radius: 1px;
+  flex-shrink: 0;
+  background: repeating-linear-gradient(90deg, currentColor 0, currentColor 4px, transparent 4px, transparent 7px);
+}
+
+.chart-wrap { position: relative; width: 100%; }
+
+/* ── Annotation badges on charts ── */
+.chart-badge {
+  font-family: var(--font-data);
+  font-size: 0.68rem;
+  background: var(--faint);
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* ── Extinction notice ── */
+#extinctNotice {
+  display: none;
+  background: rgba(224,85,85,0.08);
+  border: 1px solid rgba(224,85,85,0.25);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: var(--red);
+  margin-bottom: 1rem;
+  font-family: var(--font-data);
+}
+
+@media (max-width: 640px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .chart-card.span2 { grid-column: 1; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .page { padding: 1rem 1rem 3rem; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="header">
+    <div class="header-left">
+      <h1>Celmata <span>/ ecosystem stats</span></h1>
+    </div>
+    <span class="file-badge" id="fileBadge">no file</span>
+  </header>
+
+  <div id="dropZone">
+    <strong>Drop celmata_log.csv here</strong>
+    <p class="hint">or click to browse — generated by your simulation</p>
+    <input type="file" id="fileInput" accept=".csv">
+  </div>
+
+  <div id="extinctNotice">⚠ Population reached zero at tick <span id="extinctTick">—</span> — extinction event detected.</div>
+
+  <div id="main">
+
+    <div class="metrics" id="metricsGrid"></div>
+
+    <div class="section-label" style="margin-bottom:1rem">population dynamics</div>
+
+    <div class="charts-grid">
+
+      <div class="chart-card span2">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Population &amp; grass coverage</div>
+            <div class="chart-sub">rabbits alive + grass cells per tick</div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>population</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--teal);opacity:.6"></span>grass cells</div>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="cPop" role="img" aria-label="Population and grass over time"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Avg speed — trait drift</div>
+            <div class="chart-sub">selection pressure in action</div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>avg speed</div>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:180px">
+          <canvas id="cSpeed" role="img" aria-label="Average rabbit speed over ticks"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Avg energy</div>
+            <div class="chart-sub">mean energy across live rabbits</div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>avg energy</div>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:180px">
+          <canvas id="cEnergy" role="img" aria-label="Average rabbit energy over ticks"></canvas>
+        </div>
+      </div>
+
+      <div class="section-label" style="grid-column:1/-1;margin-top:.5rem">reproduction &amp; mortality</div>
+
+      <div class="chart-card span2">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Born vs dead — cumulative</div>
+            <div class="chart-sub">total across all ticks</div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>total born</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>total dead</div>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="cBD" role="img" aria-label="Cumulative births and deaths over ticks"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Max generation reached</div>
+            <div class="chart-sub">lineage depth over time</div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--purple)"></span>max gen</div>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:180px">
+          <canvas id="cGen" role="img" aria-label="Max generation over ticks"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Avg max energy — trait drift</div>
+            <div class="chart-sub">heritable stamina evolution</div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>avg max_energy</div>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:180px">
+          <canvas id="cMaxE" role="img" aria-label="Average max energy over ticks"></canvas>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const dropZone   = document.getElementById('dropZone');
+const fileInput  = document.getElementById('fileInput');
+const fileBadge  = document.getElementById('fileBadge');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('over');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).filter(l => l.trim()).map(line => {
+    const vals = line.split(',');
+    const row = {};
+    headers.forEach((h, i) => row[h] = parseFloat(vals[i]));
+    return row;
+  });
+}
+
+function loadFile(file) {
+  fileBadge.textContent = file.name;
+  fileBadge.style.display = 'inline-block';
+  const reader = new FileReader();
+  reader.onload = e => render(parseCSV(e.target.result));
+  reader.readAsText(file);
+}
+
+/* auto-load if served via http.server */
+(async function autoLoad() {
+  try {
+    const r = await fetch('celmata_log.csv');
+    if (!r.ok) return;
+    const text = await r.text();
+    fileBadge.textContent = 'celmata_log.csv';
+    fileBadge.style.display = 'inline-block';
+    render(parseCSV(text));
+  } catch(_) {}
+})();
+
+let charts = {};
+
+const GRID_COLOR  = 'rgba(255,255,255,0.05)';
+const TICK_COLOR  = '#3a3f4d';
+
+const baseOpts = (yLabel) => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: { duration: 600, easing: 'easeOutQuart' },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#1e2330',
+      borderColor: 'rgba(255,255,255,0.1)',
+      borderWidth: 1,
+      titleColor: '#8891a8',
+      bodyColor: '#dde1e8',
+      titleFont: { family: "'SF Mono', monospace", size: 11 },
+      bodyFont:  { family: "'SF Mono', monospace", size: 12 },
+      padding: 10,
+      callbacks: {
+        title: items => `tick ${items[0].label}`,
+      }
+    }
+  },
+  elements: { point: { radius: 0, hoverRadius: 4, hoverBackgroundColor: '#fff' } },
+  scales: {
+    x: {
+      ticks: {
+        color: TICK_COLOR,
+        font: { size: 10, family: "'SF Mono', monospace" },
+        maxTicksLimit: 10,
+        maxRotation: 0,
+      },
+      grid: { color: GRID_COLOR },
+      border: { color: 'transparent' },
+    },
+    y: {
+      ticks: {
+        color: TICK_COLOR,
+        font: { size: 10, family: "'SF Mono', monospace" },
+        maxTicksLimit: 6,
+      },
+      grid: { color: GRID_COLOR },
+      border: { color: 'transparent' },
+      title: yLabel ? { display: true, text: yLabel, color: TICK_COLOR, font: { size: 10, family: "'SF Mono', monospace" } } : undefined,
+    }
+  }
+});
+
+function lineDs(color, data, dash) {
+  return {
+    data,
+    borderColor: color,
+    borderWidth: 1.5,
+    fill: false,
+    tension: 0.35,
+    ...(dash ? { borderDash: [5, 4] } : {})
+  };
+}
+
+function render(rows) {
+  document.getElementById('main').style.display = 'block';
+  dropZone.style.display = 'none';
+
+  const ticks   = rows.map(r => r.tick);
+  const pop     = rows.map(r => r.population);
+  const grass   = rows.map(r => r.grass_count);
+  const speed   = rows.map(r => parseFloat(r.avg_speed.toFixed(2)));
+  const energy  = rows.map(r => Math.round(r.avg_energy));
+  const born    = rows.map(r => r.total_born);
+  const dead    = rows.map(r => r.total_dead);
+  const gen     = rows.map(r => r.max_generation);
+  const maxE    = rows.map(r => parseFloat(r.avg_max_energy.toFixed(1)));
+  const last    = rows[rows.length - 1];
+  const peakPop = Math.max(...pop);
+  const peakTick = ticks[pop.indexOf(peakPop)];
+
+  /* extinction check */
+  const extinctIdx = pop.findIndex(p => p === 0);
+  if (extinctIdx !== -1) {
+    document.getElementById('extinctNotice').style.display = 'block';
+    document.getElementById('extinctTick').textContent = ticks[extinctIdx];
+  }
+
+  /* survival rate */
+  const survivalRate = last.total_born > 0
+    ? (((last.total_born - last.total_dead) / last.total_born) * 100).toFixed(1)
+    : '—';
+
+  /* metrics */
+  const metrics = [
+    { label: 'Ticks simulated', val: Math.round(last.tick), sub: '',           color: '#4d9de0', accent: '#4d9de0' },
+    { label: 'Peak population', val: Math.round(peakPop),   sub: `at tick ${peakTick}`, color: '#2ecc8e', accent: '#2ecc8e' },
+    { label: 'Final population',val: Math.round(last.population), sub: `${last.population === 0 ? 'extinct' : 'alive'}`, color: last.population === 0 ? '#e05555' : '#2ecc8e', accent: last.population === 0 ? '#e05555' : '#2ecc8e' },
+    { label: 'Max generation',  val: Math.round(last.max_generation), sub: 'lineage depth', color: '#9b84f0', accent: '#9b84f0' },
+    { label: 'Total born',      val: Math.round(last.total_born),  sub: '', color: '#dde1e8', accent: '#2ecc8e' },
+    { label: 'Total dead',      val: Math.round(last.total_dead),  sub: '', color: '#e05555', accent: '#e05555' },
+    { label: 'Survival rate',   val: survivalRate + '%', sub: 'born – dead / born', color: '#f0a830', accent: '#f0a830' },
+    { label: 'Final avg speed', val: last.avg_speed.toFixed(2), sub: 'heritable trait', color: '#4d9de0', accent: '#4d9de0' },
+  ];
+
+  const grid = document.getElementById('metricsGrid');
+  grid.innerHTML = metrics.map(m => `
+    <div class="metric" style="--accent-color:${m.accent}">
+      <div class="m-label">${m.label}</div>
+      <div class="m-val" style="color:${m.color}">${m.val}</div>
+      ${m.sub ? `<div class="m-sub">${m.sub}</div>` : ''}
+    </div>
+  `).join('');
+
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+
+  charts.pop = new Chart(document.getElementById('cPop'), {
+    type: 'line',
+    data: { labels: ticks, datasets: [
+      lineDs('#2ecc8e', pop),
+      lineDs('rgba(56,196,196,0.5)', grass, true)
+    ]},
+    options: baseOpts('count')
+  });
+
+  charts.speed = new Chart(document.getElementById('cSpeed'), {
+    type: 'line',
+    data: { labels: ticks, datasets: [ lineDs('#4d9de0', speed) ] },
+    options: baseOpts('speed')
+  });
+
+  charts.energy = new Chart(document.getElementById('cEnergy'), {
+    type: 'line',
+    data: { labels: ticks, datasets: [ lineDs('#f0a830', energy) ] },
+    options: baseOpts('energy')
+  });
+
+  charts.bd = new Chart(document.getElementById('cBD'), {
+    type: 'line',
+    data: { labels: ticks, datasets: [
+      lineDs('#2ecc8e', born),
+      lineDs('#e05555', dead, true)
+    ]},
+    options: baseOpts('count')
+  });
+
+  charts.gen = new Chart(document.getElementById('cGen'), {
+    type: 'line',
+    data: { labels: ticks, datasets: [ lineDs('#9b84f0', gen) ] },
+    options: baseOpts('generation')
+  });
+
+  charts.maxE = new Chart(document.getElementById('cMaxE'), {
+    type: 'line',
+    data: { labels: ticks, datasets: [ lineDs('#f0a830', maxE) ] },
+    options: baseOpts('max energy')
+  });
+}
+</script>
+</body>
+</html>
