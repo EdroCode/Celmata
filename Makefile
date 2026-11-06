@@ -1,7 +1,7 @@
 CC      = gcc
 CFLAGS  = -Iinclude -Wall -Wextra -g $(shell sdl2-config --cflags) 
 LDLIBS  = $(shell sdl2-config --libs)
-TARGET  = program
+TARGET  = cellmata
 
 SRC = $(shell find src -name '*.c')
 OBJ = $(patsubst src/%.c,build/%.o,$(SRC))
