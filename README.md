@@ -1,5 +1,7 @@
 # Celmata
 
+# This project is currently being updated, outdated README
+
 <img width="331" height="137" alt="celmata" src="https://github.com/user-attachments/assets/c3164767-cb5c-4daf-8584-560d0e893559" />
 
 

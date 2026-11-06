@@ -1,13 +1,32 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c11  
+CC      = gcc
+CFLAGS  = -Iinclude -Wall -Wextra -g $(shell sdl2-config --cflags) 
+LDLIBS  = $(shell sdl2-config --libs)
+TARGET  = program
 
-NAME = simulation
+SRC = $(shell find src -name '*.c')
+OBJ = $(patsubst src/%.c,build/%.o,$(SRC))
+DEP = $(OBJ:.o=.d)
 
-all:
-	$(CC) $(CFLAGS) main.c map.c user_interface.c mainloop.c game_logic.c rabbit_logic.c wolf_logic.c -o $(NAME)
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
+
+build/%.o: src/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+
+build:
+	mkdir -p build
+
+run: all
+	./$(TARGET)
 
 clean:
-	rm -f simulation celmata_log.csv celmata_stats.
-	
-plot:
-	xdg-open celmata_stats.html
+	rm -rf build $(TARGET)
+
+re: clean all
+
+-include $(DEP)
+
+.PHONY: all run clean re
