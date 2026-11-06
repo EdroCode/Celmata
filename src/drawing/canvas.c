@@ -1,5 +1,6 @@
 #include "canvas.h"
 #include <stdint.h>
+#include <wchar.h>
 
 static uint32_t canvas[W * H];
 
@@ -12,4 +13,8 @@ const uint32_t *canvas_pixels(void) { return canvas; }
 
 void draw_pixel(int x, int y, uint32_t color){
     canvas[y * W + x] = color;
+}
+
+uint32_t get_pixel_color (int x, int y) {
+    return canvas[y * W + x];
 }
