@@ -1,10 +1,11 @@
 CC      = gcc
-CFLAGS  = -Iinclude -Wall -Wextra -g $(shell sdl2-config --cflags) 
-LDLIBS  = $(shell sdl2-config --libs)
+CFLAGS  = -Iinclude -Wall -Wextra -g $(shell sdl2-config --cflags)
+LDLIBS  = $(shell sdl2-config --libs) -lm
 TARGET  = celmata
 
-SRC = $(shell find src -name '*.c')
-OBJ = $(patsubst src/%.c,build/%.o,$(SRC))
+SRC = main.c $(shell find src -name '*.c')
+HDR = $(shell find src -name '*.h')
+OBJ = $(SRC:%.c=build/%.o)
 DEP = $(OBJ:.o=.d)
 
 all: $(TARGET)
@@ -12,12 +13,9 @@ all: $(TARGET)
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
-build/%.o: src/%.c
+build/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
-
-build:
-	mkdir -p build
 
 run: all
 	./$(TARGET)
@@ -25,8 +23,11 @@ run: all
 clean:
 	rm -rf build $(TARGET)
 
+format:
+	clang-format -i $(SRC) $(HDR)
+
 re: clean all
 
 -include $(DEP)
 
-.PHONY: all run clean re
+.PHONY: all run clean format re

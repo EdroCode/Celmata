@@ -2,3 +2,7 @@ build/
 program
 celmata
 compile_commands
+clang_format
+.clang_format
+.vscode
+.prettierrc
