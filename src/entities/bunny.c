@@ -1,8 +1,8 @@
+#include "src/bunny.h"
 #include "src/canvas.h"
 #include "src/utils/shuffle.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
 
 /**
  * BUNNY RULES v3
@@ -16,7 +16,7 @@
  *   IDEAL_DENSITY = 0.4  NOISE = 0.2
  *
  * 0. ORDER
- *    - Shuffle the bunny array every tick (no one gets a permanent advantage)
+ *    - Shuffle the update order every tick (no one gets a permanent advantage)
  * DONE
  *    - Skip bunnies with alive == false
  *
@@ -67,7 +67,7 @@
  *            + 0.15 * genes.vision
  *            + (moved ? 0.2 * genes.speed^2 : 0)  // sprinting is quadratic
  *    age++; repro_cooldown-- (min 0)
- *    dies if energy <= 0 or age > MAX_AGE#include "src/utils/shuffle.h"
+ *    dies if energy <= 0 or age > MAX_AGE
  *    (optional) on death: adjacent bushes gain fertility -> bunnies feed the
  * grass
  *
@@ -83,7 +83,7 @@ typedef struct {
 
 // Inheritable traits, shared by bunny and wolf so mutation code is reusable
 typedef struct Genes {
-  float vision; // float, not int: see note below
+  float vision; // float, not int: round only when scanning the grid
   float speed;
   float fear;
   float herd;
@@ -91,11 +91,12 @@ typedef struct Genes {
 
 typedef struct Bunny {
   // dynamic state
-  float energy;
   int age;
+  int hp;
+  int alive;
   int repro_cooldown;
   float move_budget;
-  int alive;
+  float energy;
 
   // inheritable
   Genes genes;
@@ -104,25 +105,56 @@ typedef struct Bunny {
   Position pos;
 } Bunny;
 
-void print_summary(void *b_list, int N) {
-  Bunny *bunnies = (Bunny *)b_list;
+struct BunnyList {
+  Bunny *bunnies;
+  int bunny_count;
+};
+
+static int check_cell(const BunnyList *list, const Position *p) {
+  for (int i = 0; i < list->bunny_count; i++) {
+    const Bunny *b = &list->bunnies[i];
+
+    if (b->alive && b->pos.x == p->x && b->pos.y == p->y)
+      return 1;
+  }
+  return 0;
+}
+
+static int check_surroundings(const BunnyList *list, const Position *p,
+                              int self, int vision, int *out) {
+  int count = 0;
+
+  for (int i = 0; i < list->bunny_count; i++) {
+    const Bunny *b = &list->bunnies[i];
+
+    if (i == self || !b->alive)
+      continue;
+
+    int dx = abs(p->x - b->pos.x);
+    int dy = abs(p->y - b->pos.y);
+
+    if (dx * dx + dy * dy <= vision * vision)
+      out[count++] = i;
+  }
+  return count;
+}
+
+void print_summary(const BunnyList *list) {
   int alive = 0;
   float energy = 0;
 
-  for (int i = 0; i < N; i++) {
-    if (!bunnies[i].alive)
+  for (int i = 0; i < list->bunny_count; i++) {
+    if (!list->bunnies[i].alive)
       continue;
     alive++;
-    energy += bunnies[i].energy;
+    energy += list->bunnies[i].energy;
   }
   printf("alive=%d avg_energy=%.1f\n", alive, alive ? energy / alive : 0.0f);
 }
 
-void print_bunnies(void *b_list, int N) {
-  Bunny *bunnies = (Bunny *)b_list;
-
-  for (int i = 0; i < N; i++) {
-    Bunny *b = &bunnies[i];
+void print_bunnies(const BunnyList *list) {
+  for (int i = 0; i < list->bunny_count; i++) {
+    const Bunny *b = &list->bunnies[i];
 
     printf("#%-3d %s pos=(%3d,%3d) energy=%6.1f age=%3d "
            "vision=%.2f speed=%.2f fear=%.2f herd=%.2f\n",
@@ -133,9 +165,9 @@ void print_bunnies(void *b_list, int N) {
 }
 
 static void initialize_bunny(Bunny *b) {
-
   b->alive = 1;
   b->energy = 100;
+  b->hp = 100;
   b->age = 0;
   b->repro_cooldown = 0;
   b->move_budget = 0;
@@ -145,29 +177,32 @@ static void initialize_bunny(Bunny *b) {
   b->pos.y = rand() % H;
 }
 
-void initialize_bunnies(void *b_list, int size) {
-  if (b_list == NULL)
-    return;
-
-  Bunny *bunnies = (Bunny *)b_list;
-
-  for (int i = 0; i < size; i++) {
-    initialize_bunny(&bunnies[i]);
-  }
-}
-
-void *create_bunnies(int size) {
+BunnyList *create_bunnies(int size) {
   if (size <= 0)
     return NULL;
 
-  Bunny *bunnies = malloc(size * sizeof(Bunny));
-
-  if (!bunnies)
+  BunnyList *list = malloc(sizeof(BunnyList));
+  if (!list)
     return NULL;
 
-  initialize_bunnies(bunnies, size);
+  list->bunnies = malloc(size * sizeof(Bunny));
+  if (!list->bunnies) {
+    free(list);
+    return NULL;
+  }
 
-  return bunnies;
+  list->bunny_count = size;
+  for (int i = 0; i < size; i++)
+    initialize_bunny(&list->bunnies[i]);
+
+  return list;
+}
+
+void destroy_bunnies(BunnyList *list) {
+  if (!list)
+    return;
+  free(list->bunnies);
+  free(list);
 }
 
 static void metabolism(Bunny *b) {
@@ -178,54 +213,47 @@ static void metabolism(Bunny *b) {
     b->alive = 0;
 }
 
-void destroy_bunnies(void *bunnies) { free(bunnies); }
-
-static void process_bunny(Bunny *b) {
+static void process_bunny(Bunny *b, const BunnyList *list) {
   if (!b->alive)
     return;
 
-  int nx = b->pos.x;
-  int ny = b->pos.y;
+  for (int attempt = 0; attempt < 4; attempt++) {
+    int dx = rand() % 3 - 1;
+    int dy = rand() % 3 - 1;
+    if (dx == 0 && dy == 0)
+      continue;
 
-  switch (rand() % 4) {
-  case 0:
-    ny++;
-    break;
-  case 1:
-    nx++;
-    break;
-  case 2:
-    ny--;
-    break;
-  case 3:
-    nx--;
-    break;
+    Position target = {(b->pos.x + dx + W) % W, (b->pos.y + dy + H) % H};
+
+    if (!check_cell(list, &target)) {
+      b->pos = target;
+      break;
+    }
   }
-
-  b->pos.x = (nx + W) % W;
-  b->pos.y = (ny + H) % H;
 
   metabolism(b);
 }
 
-void update_bunnies(void *b_list, int size) {
-  Bunny *bunnies = (Bunny *)b_list;
+void update_bunnies(BunnyList *list) {
+  int n = list->bunny_count;
 
-  int *order = malloc(size * sizeof(int));
-  for (int i = 0; i < size; i++)
+  int *order = malloc(n * sizeof(int));
+  if (!order)
+    return;
+
+  for (int i = 0; i < n; i++)
     order[i] = i;
 
-  shuffle(order, size);
+  shuffle(order, n);
 
-  for (int i = 0; i < size; i++)
-    process_bunny(&bunnies[order[i]]);
+  for (int i = 0; i < n; i++)
+    process_bunny(&list->bunnies[order[i]], list);
 
   free(order);
 }
 
-void draw_bunnies(void *b_list, int size) {
-  Bunny *bunnies = b_list;
-  for (int i = 0; i < size; i++)
-    if (bunnies[i].alive)
-      draw_pixel(bunnies[i].pos.x, bunnies[i].pos.y, WHITE);
+void draw_bunnies(const BunnyList *list) {
+  for (int i = 0; i < list->bunny_count; i++)
+    if (list->bunnies[i].alive)
+      draw_pixel(list->bunnies[i].pos.x, list->bunnies[i].pos.y, WHITE);
 }

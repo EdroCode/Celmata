@@ -1,15 +1,15 @@
-#include <sys/types.h>
+#ifndef BUNNY_H
+#define BUNNY_H
 
-void print_summary(void *b_list, int N);
+typedef struct BunnyList BunnyList;
 
-void print_bunnies(void *b_list, int N);
+BunnyList *create_bunnies(int size);
+void destroy_bunnies(BunnyList *list);
 
-void initialize_bunnies(void *b_list, int size);
+void update_bunnies(BunnyList *list);
+void draw_bunnies(const BunnyList *list);
 
-void update_bunnies(void *b_list, int size);
+void print_bunnies(const BunnyList *list);
+void print_summary(const BunnyList *list);
 
-void *create_bunnies(int size);
-
-void destroy_bunnies(void *bunnies);
-
-void draw_bunnies(void *b_list, int size);
+#endif

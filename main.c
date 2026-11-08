@@ -1,5 +1,6 @@
 #include "src/bunny.h"
 #include "src/canvas.h"
+#include "src/game_loop.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <time.h>
@@ -20,27 +21,20 @@ int main(int argc, char *argv[]) {
 
   srand((unsigned int)time(NULL));
 
-  int bunny_count = 5;
-  void *bunnies = create_bunnies(bunny_count);
+  int bunny_start_count = 5;
+  void *b_list = create_bunnies(bunny_start_count);
 
   float game_speed = 0.1;
 
   int running = 1, loops = 0;
 
   while (running) {
-
-    // printf("Loop : %d\n", loops);
-    print_bunnies(bunnies, bunny_count);
-
     SDL_Event e;
     while (SDL_PollEvent(&e))
       if (e.type == SDL_QUIT)
         running = 0;
 
-    // GAMELOOP: INPUT -> UPADTE -> RENDER
-    // UPDATE
-    update_bunnies(bunnies, bunny_count);
-    draw_bunnies(bunnies, bunny_count);
+    game_loop(b_list);
 
     SDL_UpdateTexture(tex, NULL, canvas_pixels(), W * 4);
     SDL_RenderCopy(ren, tex, NULL, NULL);
@@ -52,8 +46,8 @@ int main(int argc, char *argv[]) {
   }
 
   printf("Stopped at tick %d\n", loops);
-  print_summary(bunnies, bunny_count);
-  destroy_bunnies(bunnies);
+  print_summary(b_list);
+  destroy_bunnies(b_list);
 
   SDL_DestroyTexture(tex);
   SDL_DestroyRenderer(ren);
