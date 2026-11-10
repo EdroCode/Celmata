@@ -1,5 +1,5 @@
-#include "src/bunny.h"
-#include "src/canvas.h"
+#include "src/drawing/canvas.h"
+#include "src/entities/bunny.h"
 #include "src/game_loop.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 
   srand((unsigned int)time(NULL));
 
-  int bunny_start_count = 5;
+  int bunny_start_count = 10;
   void *b_list = create_bunnies(bunny_start_count);
 
   float game_speed = 0.1;

@@ -1,6 +1,6 @@
-#include "src/bunny.h"
-#include "src/canvas.h"
-#include "src/utils/shuffle.h"
+#include "bunny.h"
+#include "drawing/canvas.h"
+#include "utils/shuffle.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -138,6 +138,8 @@ static int check_surroundings(const BunnyList *list, const Position *p,
   }
   return count;
 }
+
+void add_new_bunny() {}
 
 void print_summary(const BunnyList *list) {
   int alive = 0;

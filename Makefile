@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -Iinclude -Wall -Wextra -g $(shell sdl2-config --cflags)
+CFLAGS = -Isrc -Wall -Wextra -g $(shell sdl2-config --cflags)
 LDLIBS  = $(shell sdl2-config --libs) -lm
 TARGET  = celmata
 

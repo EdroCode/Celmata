@@ -1,9 +1,9 @@
 [
   {
-    "file": "src/main.c",
+    "file": "main.c",
     "arguments": [
       "/usr/bin/gcc",
-      "-Iinclude",
+      "-Isrc",
       "-Wall",
       "-Wextra",
       "-g",
@@ -13,11 +13,53 @@
       "-MMD",
       "-MP",
       "-c",
-      "src/main.c",
+      "main.c",
       "-o",
       "build/main.o"
     ],
     "directory": "/home/edro/Documents/Projects/celmata",
     "output": "build/main.o"
+  },
+  {
+    "file": "src/utils/shuffle.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Isrc",
+      "-Wall",
+      "-Wextra",
+      "-g",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/utils/shuffle.c",
+      "-o",
+      "build/src/utils/shuffle.o"
+    ],
+    "directory": "/home/edro/Documents/Projects/celmata",
+    "output": "build/src/utils/shuffle.o"
+  },
+  {
+    "file": "src/drawing/canvas.c",
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Isrc",
+      "-Wall",
+      "-Wextra",
+      "-g",
+      "-I/usr/include/SDL2",
+      "-D_GNU_SOURCE=1",
+      "-D_REENTRANT",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/drawing/canvas.c",
+      "-o",
+      "build/src/drawing/canvas.o"
+    ],
+    "directory": "/home/edro/Documents/Projects/celmata",
+    "output": "build/src/drawing/canvas.o"
   }
 ]
