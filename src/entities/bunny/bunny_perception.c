@@ -2,7 +2,7 @@
 #include "drawing/canvas.h"
 #include <stdlib.h>
 
-int check_cell(struct BunnyList *list, const Position *p) {
+int check_cell(BunnyList *list, const Position *p) {
   for (int i = 0; i < list->bunny_count; i++) {
     const Bunny *b = &list->bunnies[i];
 
@@ -12,8 +12,8 @@ int check_cell(struct BunnyList *list, const Position *p) {
   return 0;
 }
 
-int check_surroundings(struct BunnyList *list, const Position *p, int self,
-                       int vision, int *out) {
+int check_surroundings(BunnyList *list, const Position *p, int self, int vision,
+                       int *out) {
   int count = 0;
 
   for (int i = 0; i < list->bunny_count; i++) {
@@ -31,7 +31,7 @@ int check_surroundings(struct BunnyList *list, const Position *p, int self,
   return count;
 }
 
-int bunny_check_empty_surroundings(const BunnyList *list, const Position *p,
+int bunny_check_empty_surroundings(BunnyList *list, const Position *p,
                                    int radius, Position *out, int max_out) {
   int count = 0;
 

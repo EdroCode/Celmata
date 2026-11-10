@@ -1,8 +1,6 @@
 #include "bunny_internal.h"
 #include "drawing/canvas.h"
 #include "utils/shuffle.h"
-#include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 /**
@@ -155,7 +153,7 @@ static void reproduce(BunnyList *b_list, Bunny *b, Position p) {
   add_new_bunny(b_list, p, b->genes, 100);
 }
 
-static void process_bunny(int bunny_id, const BunnyList *list) {
+static void process_bunny(int bunny_id, BunnyList *list) {
   Bunny *b = &list->bunnies[bunny_id];
 
   if (!b->alive)

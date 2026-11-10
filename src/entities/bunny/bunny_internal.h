@@ -35,10 +35,10 @@ struct BunnyList {
   int bunny_capacity;
 };
 
-int check_cell(struct BunnyList *list, const Position *p);
+int check_cell(BunnyList *list, const Position *p);
 
-int check_surroundings(struct BunnyList *list, const Position *p, int self,
-                       int vision, int *out);
+int check_surroundings(BunnyList *list, const Position *p, int self, int vision,
+                       int *out);
 
-int bunny_check_empty_surroundings(const BunnyList *list, const Position *p,
+int bunny_check_empty_surroundings(BunnyList *list, const Position *p,
                                    int radius, Position *out, int max_out);

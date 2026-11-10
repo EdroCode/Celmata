@@ -1,4 +1,4 @@
-#include "entities/bunny.h"
+#include "entities/bunny/bunny.h"
 
 int game_loop(void *bunnies) {
   // GAME

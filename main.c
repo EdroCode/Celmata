@@ -1,5 +1,5 @@
 #include "src/drawing/canvas.h"
-#include "src/entities/bunny.h"
+#include "src/entities/bunny/bunny.h"
 #include "src/game_loop.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
