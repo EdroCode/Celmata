@@ -1,9 +1,9 @@
-#include "src/bunny.h"
+#include "entities/bunny.h"
 
 int game_loop(void *bunnies) {
   // GAME
-  print_bunnies(bunnies);
-
+  // print_bunnies(bunnies);
+  print_bunny_count(bunnies);
   // LOOP: INPUT -> UPADTE -> RENDER
   // UPDATE
   update_bunnies(bunnies);

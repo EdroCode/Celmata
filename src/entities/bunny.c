@@ -1,6 +1,7 @@
-#include "bunny.h"
+#include "bunny_internal.h"
 #include "drawing/canvas.h"
 #include "utils/shuffle.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -76,94 +77,26 @@
  * 0.9) attack_success = wolf.hunger * (1 - escape)  // wolf.hunger = 1 -
  * wolf.energy / MAX success -> bunny.alive = false, wolf.energy += bunny_value
  */
-
-typedef struct {
-  int x, y;
-} Position;
-
-// Inheritable traits, shared by bunny and wolf so mutation code is reusable
-typedef struct Genes {
-  float vision; // float, not int: round only when scanning the grid
-  float speed;
-  float fear;
-  float herd;
-} Genes;
-
-typedef struct Bunny {
-  // dynamic state
-  int age;
-  int hp;
-  int alive;
-  int repro_cooldown;
-  float move_budget;
-  float energy;
-
-  // inheritable
-  Genes genes;
-
-  // position
-  Position pos;
-} Bunny;
-
-struct BunnyList {
-  Bunny *bunnies;
-  int bunny_count;
-};
-
-static int check_cell(const BunnyList *list, const Position *p) {
-  for (int i = 0; i < list->bunny_count; i++) {
-    const Bunny *b = &list->bunnies[i];
-
-    if (b->alive && b->pos.x == p->x && b->pos.y == p->y)
-      return 1;
-  }
-  return 0;
-}
-
-static int check_surroundings(const BunnyList *list, const Position *p,
-                              int self, int vision, int *out) {
-  int count = 0;
+Bunny *add_new_bunny(BunnyList *list, Position pos, Genes genes, float energy) {
+  int slot = -1;
 
   for (int i = 0; i < list->bunny_count; i++) {
-    const Bunny *b = &list->bunnies[i];
-
-    if (i == self || !b->alive)
-      continue;
-
-    int dx = abs(p->x - b->pos.x);
-    int dy = abs(p->y - b->pos.y);
-
-    if (dx * dx + dy * dy <= vision * vision)
-      out[count++] = i;
+    if (!list->bunnies[i].alive) {
+      slot = i;
+      break;
+    }
   }
-  return count;
-}
 
-void add_new_bunny() {}
-
-void print_summary(const BunnyList *list) {
-  int alive = 0;
-  float energy = 0;
-
-  for (int i = 0; i < list->bunny_count; i++) {
-    if (!list->bunnies[i].alive)
-      continue;
-    alive++;
-    energy += list->bunnies[i].energy;
+  if (slot < 0) {
+    if (list->bunny_count >= list->bunny_capacity)
+      return NULL;
+    slot = list->bunny_count++;
   }
-  printf("alive=%d avg_energy=%.1f\n", alive, alive ? energy / alive : 0.0f);
-}
 
-void print_bunnies(const BunnyList *list) {
-  for (int i = 0; i < list->bunny_count; i++) {
-    const Bunny *b = &list->bunnies[i];
-
-    printf("#%-3d %s pos=(%3d,%3d) energy=%6.1f age=%3d "
-           "vision=%.2f speed=%.2f fear=%.2f herd=%.2f\n",
-           i, b->alive ? "alive" : "dead ", b->pos.x, b->pos.y, b->energy,
-           b->age, b->genes.vision, b->genes.speed, b->genes.fear,
-           b->genes.herd);
-  }
+  Bunny *b = &list->bunnies[slot];
+  *b = (Bunny){
+      .alive = 1, .hp = 100, .energy = energy, .genes = genes, .pos = pos};
+  return b;
 }
 
 static void initialize_bunny(Bunny *b) {
@@ -178,22 +111,25 @@ static void initialize_bunny(Bunny *b) {
   b->pos.x = rand() % W;
   b->pos.y = rand() % H;
 }
+struct BunnyList *create_bunnies(int size) {
+  int capacity = W * H;
 
-BunnyList *create_bunnies(int size) {
-  if (size <= 0)
+  if (size <= 0 || size > capacity)
     return NULL;
 
-  BunnyList *list = malloc(sizeof(BunnyList));
+  struct BunnyList *list = malloc(sizeof(struct BunnyList));
   if (!list)
     return NULL;
 
-  list->bunnies = malloc(size * sizeof(Bunny));
+  list->bunnies = malloc(capacity * sizeof(Bunny));
   if (!list->bunnies) {
     free(list);
     return NULL;
   }
 
   list->bunny_count = size;
+  list->bunny_capacity = capacity;
+
   for (int i = 0; i < size; i++)
     initialize_bunny(&list->bunnies[i]);
 
@@ -215,7 +151,13 @@ static void metabolism(Bunny *b) {
     b->alive = 0;
 }
 
-static void process_bunny(Bunny *b, const BunnyList *list) {
+static void reproduce(BunnyList *b_list, Bunny *b, Position p) {
+  add_new_bunny(b_list, p, b->genes, 100);
+}
+
+static void process_bunny(int bunny_id, const BunnyList *list) {
+  Bunny *b = &list->bunnies[bunny_id];
+
   if (!b->alive)
     return;
 
@@ -227,6 +169,23 @@ static void process_bunny(Bunny *b, const BunnyList *list) {
 
     Position target = {(b->pos.x + dx + W) % W, (b->pos.y + dy + H) % H};
 
+    // Reproduce
+    int b_surround[25600]; // REview this
+    int n = check_surroundings(list, &b->pos, bunny_id, b->genes.vision,
+                               b_surround);
+
+    if (n >= 2 && (float)rand() / RAND_MAX < 0.10f) {
+
+      Position valid_pos[8];
+
+      int pn = bunny_check_empty_surroundings(list, &b->pos, b->genes.vision,
+                                              valid_pos, 8);
+
+      if (pn > 0) {
+        int ix = rand() % pn;
+        reproduce(list, b, valid_pos[ix]);
+      }
+    }
     if (!check_cell(list, &target)) {
       b->pos = target;
       break;
@@ -249,7 +208,7 @@ void update_bunnies(BunnyList *list) {
   shuffle(order, n);
 
   for (int i = 0; i < n; i++)
-    process_bunny(&list->bunnies[order[i]], list);
+    process_bunny(order[i], list);
 
   free(order);
 }

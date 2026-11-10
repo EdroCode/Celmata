@@ -1,4 +1,4 @@
-#include "src/canvas.h"
+#include "canvas.h"
 #include <stdint.h>
 #include <wchar.h>
 

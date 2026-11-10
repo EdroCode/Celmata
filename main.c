@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 
   srand((unsigned int)time(NULL));
 
-  int bunny_start_count = 10;
+  int bunny_start_count = 85;
   void *b_list = create_bunnies(bunny_start_count);
 
   float game_speed = 0.1;
