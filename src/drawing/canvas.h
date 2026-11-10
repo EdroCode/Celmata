@@ -1,9 +1,5 @@
 #include <stdint.h>
 
-#define W 55
-#define H 50
-#define SCALE 10
-
 #define WHITE 0xFFFFFFFF
 #define BLACK 0xFF2B2B33
 #define RED 0xFFFF9AA2

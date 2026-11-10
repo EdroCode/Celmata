@@ -1,6 +1,8 @@
 #include "src/drawing/canvas.h"
 #include "src/entities/bunny/bunny.h"
+#include "src/entities/busn/bush.h"
 #include "src/game_loop.h"
+#include "types.h"
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <time.h>
@@ -21,12 +23,19 @@ int main(int argc, char *argv[]) {
 
   srand((unsigned int)time(NULL));
 
+  // BUSHES
+  int bush_start_count = 100;
+  void *bs_list = create_bushes(bush_start_count);
+
+  // BUNNIES
   int bunny_start_count = 85;
   void *b_list = create_bunnies(bunny_start_count);
 
+  // GAME
   float game_speed = 0.1;
-
   int running = 1, loops = 0;
+
+  // LOOP
 
   while (running) {
     SDL_Event e;
@@ -34,7 +43,7 @@ int main(int argc, char *argv[]) {
       if (e.type == SDL_QUIT)
         running = 0;
 
-    game_loop(b_list);
+    game_loop(bs_list, b_list);
 
     SDL_UpdateTexture(tex, NULL, canvas_pixels(), W * 4);
     SDL_RenderCopy(ren, tex, NULL, NULL);

@@ -1,1 +1,1 @@
-int game_loop(void *bunnies);
+int game_loop(void *bushes, void *bunnies);

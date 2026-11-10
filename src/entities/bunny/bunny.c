@@ -109,6 +109,7 @@ static void initialize_bunny(Bunny *b) {
   b->pos.x = rand() % W;
   b->pos.y = rand() % H;
 }
+
 struct BunnyList *create_bunnies(int size) {
   int capacity = W * H;
 

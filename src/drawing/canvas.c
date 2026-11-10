@@ -1,4 +1,5 @@
 #include "canvas.h"
+#include "types.h"
 #include <stdint.h>
 #include <wchar.h>
 
