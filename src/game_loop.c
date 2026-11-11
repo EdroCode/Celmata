@@ -1,5 +1,5 @@
 #include "entities/bunny/bunny.h"
-#include "entities/busn/bush.h"
+#include "entities/bush/bush.h"
 
 int game_loop(void *bushes, void *bunnies) {
   // GAME

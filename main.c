@@ -1,6 +1,6 @@
 #include "src/drawing/canvas.h"
 #include "src/entities/bunny/bunny.h"
-#include "src/entities/busn/bush.h"
+#include "src/entities/bush/bush.h"
 #include "src/game_loop.h"
 #include "types.h"
 #include <SDL2/SDL.h>

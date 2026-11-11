@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 static void initialize_bush(Bush *bs) {
-
+  bs->food = 100;
   bs->pos.x = rand() % W;
   bs->pos.y = rand() % H;
 }

@@ -2,6 +2,7 @@
 
 typedef struct Bush {
   Position pos;
+  int food;
 } Bush;
 
 typedef struct BushList {

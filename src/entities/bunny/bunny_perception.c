@@ -31,6 +31,24 @@ int check_surroundings(BunnyList *list, const Position *p, int self, int vision,
   return count;
 }
 
+int check_bush_surroundings(BushList *bs_list, Position *p, int self,
+                            int vision, int *out) {
+
+  if (bs_list == NULL)
+    return 0;
+  int count = 0;
+  for (int i = 0; i < bs_list->bush_count; i++) {
+    const Bush *bs = &bs_list->bushes[i];
+
+    int dx = abs(p->x - bs->pos.x);
+    int dy = abs(p->y - bs->pos.y);
+
+    if (dx * dx + dy * dy <= vision * vision)
+      out[count++] = i;
+  }
+  return count;
+}
+
 int bunny_check_empty_surroundings(BunnyList *list, const Position *p,
                                    int radius, Position *out, int max_out) {
   int count = 0;

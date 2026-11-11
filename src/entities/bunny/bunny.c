@@ -185,6 +185,7 @@ static void process_bunny(int bunny_id, BunnyList *list) {
         reproduce(list, b, valid_pos[ix]);
       }
     }
+
     if (!check_cell(list, &target)) {
       b->pos = target;
       break;

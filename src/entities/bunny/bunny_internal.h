@@ -1,4 +1,5 @@
 #include "bunny.h"
+#include "entities/bush/bush.h"
 #include "types.h"
 
 typedef struct Bunny {
@@ -31,3 +32,6 @@ int check_surroundings(BunnyList *list, const Position *p, int self, int vision,
 
 int bunny_check_empty_surroundings(BunnyList *list, const Position *p,
                                    int radius, Position *out, int max_out);
+
+int check_bush_surroundings(BushList *bs_list, Position *p, int self,
+                            int vision, int *out);

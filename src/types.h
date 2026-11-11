@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 typedef struct Position {
   int x, y;
 } Position;
@@ -13,3 +16,5 @@ typedef struct Genes {
 #define W 55
 #define H 50
 #define SCALE 10
+
+#endif
