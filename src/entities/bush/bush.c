@@ -40,16 +40,40 @@ void destroy_bushes(BushList *list) {
   free(list);
 }
 
-void process_bush(Bush *bs) { return; }
+static void destroy_bush(BushList *list, int ix) {
+  // TODO
+  return;
+}
+
+static void process_bush(BushList *bs, int ix) {
+
+  if (bs->bushes[ix].food <= 0) {
+    destroy_bush(bs, ix);
+  }
+}
 
 void update_bushes(BushList *list) {
   int n = list->bush_count;
 
   for (int i = 0; i < n; i++)
-    process_bush(&list->bushes[i]);
+    process_bush(list, i);
 }
 
 void draw_bushes(BushList *list) {
   for (int i = 0; i < list->bush_count; i++)
     draw_pixel(list->bushes[i].pos.x, list->bushes[i].pos.y, GREEN);
+}
+
+// Gets all the bushes in the map
+int bush_available(BushList *list, Position *pos, int *ids, int max_out) {
+  int count = 0;
+
+  for (int i = 0; i < list->bush_count && i < max_out; i++) {
+    if (list->bushes[i].food > 0) {
+      pos[count] = list->bushes[i].pos;
+      ids[count] = i;
+      count++;
+    }
+  }
+  return count;
 }

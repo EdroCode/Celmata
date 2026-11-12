@@ -1,5 +1,6 @@
 #include "bunny_internal.h"
 #include "drawing/canvas.h"
+#include "utils/utils.h"
 #include <stdlib.h>
 
 int check_cell(BunnyList *list, const Position *p) {
@@ -31,22 +32,24 @@ int check_surroundings(BunnyList *list, const Position *p, int self, int vision,
   return count;
 }
 
-int check_bush_surroundings(BushList *bs_list, Position *p, int self,
-                            int vision, int *out) {
+int check_bush_surroundings(void *bs_list, Position *p, int self, int vision,
+                            int *out) {
 
-  if (bs_list == NULL)
-    return 0;
-  int count = 0;
-  for (int i = 0; i < bs_list->bush_count; i++) {
-    const Bush *bs = &bs_list->bushes[i];
+  BushList *bush_list = (BushList *)bs_list;
+  // Right now will only watch for close bushes, nearby requires movement in
+  // bush direction
+  vision = 1;
 
-    int dx = abs(p->x - bs->pos.x);
-    int dy = abs(p->y - bs->pos.y);
+  Position ps[8]; // temp, see 8 below
+  int ix[8];
+  int n = 0;
+  int psIx[8];
 
-    if (dx * dx + dy * dy <= vision * vision)
-      out[count++] = i;
-  }
-  return count;
+  bush_available(bs_list, ps, ix, 8);
+
+  n = find_within(ps, 8, p, vision, psIx, 8);
+
+  return n;
 }
 
 int bunny_check_empty_surroundings(BunnyList *list, const Position *p,

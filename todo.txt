@@ -1,0 +1,242 @@
+/**
+ * BUNNY RULES v3 — IMPLEMENTATION CHECKLIST
+ *
+ * ============================================================
+ * STATE & GENES
+ * ============================================================
+ *
+ * [ ] STATE:
+ *     [ ] energy
+ *     [ ] age
+ *     [ ] repro_cooldown
+ *     [ ] move_budget
+ *     [ ] alive
+ *
+ * [ ] GENES (inherited and mutated):
+ *     [ ] vision
+ *     [ ] speed
+ *     [ ] fear
+ *     [ ] herd
+ *
+ * [ ] CONSTANTS:
+ *     [ ] MAX_ENERGY       = 100
+ *     [ ] NEWBORN_ENERGY   = 25
+ *     [ ] MAX_AGE          = 150
+ *     [ ] BASE_COST        = 0.5
+ *     [ ] MATURITY         = 20
+ *     [ ] EAT_GAIN         = 10
+ *     [ ] BASE_P           = 0.3
+ *     [ ] REPRO_COST       = 30
+ *     [ ] REPRO_COOLDOWN   = 10
+ *     [ ] IDEAL_DENSITY    = 0.4
+ *     [ ] NOISE            = 0.2
+ *
+ * ============================================================
+ * 0. ORDER
+ * ============================================================
+ *
+ * [x] Shuffle bunny update order every tick.
+ *     - Prevent any bunny from having a permanent advantage.
+ *
+ * [x] Skip bunnies with alive == false.
+ *
+ * ============================================================
+ * 1. PERCEPTION
+ * ============================================================
+ *
+ * [ ] Calculate perception radius:
+ *     radius = roundf(genes.vision)
+ *
+ * [ ] Scan perception exactly once per bunny per tick.
+ *
+ * [ ] Detect all wolves within radius.
+ *     [ ] Calculate distance to each wolf.
+ *
+ * [ ] Detect all bushes with food > 0 within radius.
+ *     [ ] Calculate distance to each bush.
+ *
+ * [ ] Detect all other bunnies within radius.
+ *     [ ] Calculate distance to each bunny.
+ *
+ * [ ] Calculate local density:
+ *     local_density = bunnies_in_radius / cells_in_radius
+ *
+ * [ ] Ignore everything outside the perception radius.
+ *     - Anything outside the radius does not exist for this bunny.
+ *
+ * ============================================================
+ * 2. EAT
+ * ============================================================
+ *
+ * [ ] Check whether a bush with food is adjacent.
+ *
+ * [ ] Check whether any wolf is within perception radius.
+ *
+ * [ ] If an adjacent bush exists AND no wolf is visible:
+ *     [ ] Calculate eating amount:
+ *         amount = min(EAT_GAIN, bush.food, MAX_ENERGY - energy)
+ *
+ *     [ ] Add amount to bunny energy.
+ *     [ ] Subtract amount from bush food.
+ *     [ ] Skip movement for this tick.
+ *
+ * [ ] If a wolf is visible:
+ *     - Do not graze.
+ *     - Continue to MOVE (step 3).
+ *
+ * ============================================================
+ * 3. MOVE — UTILITY SCORING
+ * ============================================================
+ *
+ * [ ] Add genes.speed to move_budget:
+ *     move_budget += genes.speed
+ *
+ * [ ] While move_budget >= 1:
+ *
+ *     [ ] Calculate hunger:
+ *         hunger = 1 - energy / MAX_ENERGY
+ *         // 0 = full, 1 = starving
+ *
+ *     [ ] Evaluate every FREE neighboring cell.
+ *
+ *     [ ] Calculate bush_pull(c):
+ *         // Attraction towards visible food.
+ *
+ *     [ ] Calculate wolf_threat(c):
+ *         // Threat from visible wolves.
+ *
+ *     [ ] Calculate bunny_pull(c):
+ *         // Attraction towards visible bunnies.
+ *
+ *     [ ] Calculate density(c):
+ *         // Local bunny density around candidate cell.
+ *
+ *     [ ] Calculate candidate cell score:
+ *
+ *         score(c) =
+ *               1.0 * hunger * bush_pull(c)
+ *             - genes.fear * wolf_threat(c)
+ *             + genes.herd * (IDEAL_DENSITY - density(c))
+ *               * bunny_pull(c)
+ *             + NOISE * random(0..1)
+ *
+ *     [ ] Select the neighboring cell with the highest score.
+ *
+ *     [ ] Move bunny to the selected cell.
+ *
+ *     [ ] Subtract 1 from move_budget.
+ *
+ *     [ ] Set moved = true.
+ *
+ * [ ] Implement pull/threat calculations:
+ *     pull/threat = sum over visible things of 1 / (distance + 1)
+ *
+ * [ ] Verify herd behavior:
+ *     - The herd term must flip sign depending on density.
+ *     - Bunnies group together in open space.
+ *     - Bunnies spread out when the area is crowded.
+ *
+ * [ ] Verify hunger behavior:
+ *     - Hungry bunnies prioritize food.
+ *     - Full bunnies are more influenced by fear and herd behavior.
+ *
+ * ============================================================
+ * 4. REPRODUCTION
+ * ============================================================
+ *
+ * [ ] Check all reproduction requirements:
+ *     [ ] age >= MATURITY
+ *     [ ] energy > 70% of MAX_ENERGY
+ *     [ ] repro_cooldown == 0
+ *     [ ] At least one adult bunny is adjacent.
+ *     [ ] At least one free adjacent cell exists.
+ *
+ * [ ] Calculate reproduction probability:
+ *     chance = BASE_P * (1 - local_density)
+ *     // Crowding lowers birth probability.
+ *
+ * [ ] Roll reproduction chance.
+ *
+ * [ ] On successful reproduction:
+ *     [ ] Subtract REPRO_COST from parent energy.
+ *
+ *     [ ] Create child bunny.
+ *     [ ] Set child.energy = NEWBORN_ENERGY.
+ *
+ *     [ ] Inherit parent genes.
+ *     [ ] Mutate inherited genes.
+ *
+ *     [ ] Find a random free adjacent cell.
+ *     [ ] Spawn child in that cell.
+ *
+ *     [ ] Set parent repro_cooldown = REPRO_COOLDOWN.
+ *
+ * ============================================================
+ * 5. METABOLISM
+ * ============================================================
+ *
+ * [ ] Apply metabolism at the END of the tick.
+ *
+ * [ ] Calculate base energy cost:
+ *     BASE_COST
+ *
+ * [ ] Apply vision energy cost:
+ *     0.15 * genes.vision
+ *
+ * [ ] Apply movement energy cost:
+ *     moved ? 0.2 * genes.speed^2 : 0
+ *     // Sprinting has a quadratic energy cost.
+ *
+ * [ ] Subtract total energy cost:
+ *     energy -= BASE_COST
+ *             + 0.15 * genes.vision
+ *             + (moved ? 0.2 * genes.speed^2 : 0)
+ *
+ * [ ] Increment age:
+ *     age++
+ *
+ * [ ] Decrease reproduction cooldown:
+ *     repro_cooldown = max(0, repro_cooldown - 1)
+ *
+ * [ ] Check death conditions:
+ *     [ ] energy <= 0
+ *     [ ] age > MAX_AGE
+ *
+ * [ ] If either death condition is met:
+ *     [ ] Set alive = false.
+ *
+ * [ ] OPTIONAL — Death and ecosystem interaction:
+ *     [ ] On bunny death, adjacent bushes gain fertility.
+ *     [ ] Allow bunnies to indirectly feed the grass.
+ *
+ * ============================================================
+ * 6. WOLF ENCOUNTER
+ * ============================================================
+ *
+ * [ ] Resolve wolf encounters on the WOLF'S turn.
+ *     - Do NOT resolve wolf attacks during the bunny update.
+ *
+ * [ ] Calculate bunny escape probability:
+ *
+ *     escape = clamp(
+ *         0.1
+ *         + 0.2 * genes.speed
+ *         + (adjacent_to_bush ? 0.3 : 0),
+ *         0,
+ *         0.9
+ *     )
+ *
+ * [ ] Calculate wolf hunger:
+ *     wolf.hunger = 1 - wolf.energy / MAX_ENERGY
+ *
+ * [ ] Calculate attack success probability:
+ *     attack_success = wolf.hunger * (1 - escape)
+ *
+ * [ ] If the wolf attack succeeds:
+ *     [ ] Set bunny.alive = false.
+ *     [ ] Add bunny_value to wolf.energy.
+ *
+ * ============================================================
+ * END OF BUNNY RULES v3
+ * ============================================================
+ */

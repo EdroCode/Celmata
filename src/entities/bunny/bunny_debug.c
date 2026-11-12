@@ -26,5 +26,10 @@ void print_bunnies(const BunnyList *list) {
 }
 
 void print_bunny_count(BunnyList *b_list) {
-  printf("Bunny Count: %d \n", b_list->bunny_count);
+  int j = 0;
+  for (int i = 0; i < b_list->bunny_count; i++) {
+    if (b_list->bunnies[i].alive)
+      j++;
+  }
+  printf("Bunny Alive Count: %d \n", b_list->bunny_count);
 }

@@ -1,6 +1,7 @@
 #include "bunny_internal.h"
 #include "drawing/canvas.h"
-#include "utils/shuffle.h"
+#include "utils/utils.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 /**
@@ -190,6 +191,11 @@ static void process_bunny(int bunny_id, BunnyList *list) {
       b->pos = target;
       break;
     }
+  }
+
+  if (check_bush_surroundings(list, &b->pos, bunny_id, b->genes.vision, NULL)) {
+    b->energy + 10;
+    printf("BUnny FEED");
   }
 
   metabolism(b);
