@@ -12,6 +12,4 @@ int game_loop(void *bushes, void *bunnies) {
   // UPDATE BUNNIES
   update_bunnies(bunnies);
   draw_bunnies(bunnies);
-
-  // update bunnies
 }

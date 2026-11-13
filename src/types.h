@@ -13,8 +13,13 @@ typedef struct Genes {
   float herd;
 } Genes;
 
-#define W 55
-#define H 50
+#define W 100
+#define H 100
 #define SCALE 10
+
+#define INIT_BUNNY_COUNT 100
+#define INIT_BUSH_COUNT 150
+
+#define GAME_SPEED 0.1f // default 0.1
 
 #endif

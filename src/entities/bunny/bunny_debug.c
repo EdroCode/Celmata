@@ -1,6 +1,15 @@
 #include "bunny_internal.h"
 #include <stdio.h>
 
+static int get_bunnies(BunnyList *b_list, int alive) {
+  int j = 0;
+  for (int i = 0; i < b_list->bunny_count; i++) {
+    if (alive ? b_list->bunnies[i].alive : !b_list->bunnies[i].alive)
+      j++;
+  }
+  return j;
+}
+
 void print_summary(const BunnyList *list) {
   int alive = 0;
   float energy = 0;
@@ -13,6 +22,7 @@ void print_summary(const BunnyList *list) {
   }
   printf("alive=%d avg_energy=%.1f\n", alive, alive ? energy / alive : 0.0f);
 }
+
 void print_bunnies(const BunnyList *list) {
   for (int i = 0; i < list->bunny_count; i++) {
     const Bunny *b = &list->bunnies[i];
@@ -23,13 +33,9 @@ void print_bunnies(const BunnyList *list) {
            b->age, b->genes.vision, b->genes.speed, b->genes.fear,
            b->genes.herd);
   }
+  printf("--------------------------------------------");
 }
 
 void print_bunny_count(BunnyList *b_list) {
-  int j = 0;
-  for (int i = 0; i < b_list->bunny_count; i++) {
-    if (b_list->bunnies[i].alive)
-      j++;
-  }
-  printf("Bunny Alive Count: %d \n", b_list->bunny_count);
+  printf("Bunny Alive Count: %d \n", get_bunnies(b_list, 1));
 }

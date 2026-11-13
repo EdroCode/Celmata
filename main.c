@@ -4,6 +4,7 @@
 #include "src/game_loop.h"
 #include "types.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -23,20 +24,21 @@ int main(int argc, char *argv[]) {
 
   srand((unsigned int)time(NULL));
 
+  SDL_RenderPresent(ren);
+
+  ;
   // BUSHES
-  int bush_start_count = 100;
-  void *bs_list = create_bushes(bush_start_count);
+  void *bs_list = create_bushes(INIT_BUSH_COUNT);
 
   // BUNNIES
-  int bunny_start_count = 85;
-  void *b_list = create_bunnies(bunny_start_count);
+  void *b_list = create_bunnies(INIT_BUNNY_COUNT);
 
   // GAME
-  float game_speed = 0.1;
   int running = 1, loops = 0;
 
-  // LOOP
+  debug_map_details();
 
+  // LOOP
   while (running) {
     SDL_Event e;
     while (SDL_PollEvent(&e))
@@ -51,7 +53,7 @@ int main(int argc, char *argv[]) {
 
     loops++;
     clear_canvas();
-    SDL_Delay(game_speed * 1000);
+    SDL_Delay(GAME_SPEED * 1000);
   }
 
   printf("Stopped at tick %d\n", loops);

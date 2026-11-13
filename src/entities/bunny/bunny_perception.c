@@ -35,11 +35,6 @@ int check_surroundings(BunnyList *list, const Position *p, int self, int vision,
 int check_bush_surroundings(void *bs_list, Position *p, int self, int vision,
                             int *out) {
 
-  BushList *bush_list = (BushList *)bs_list;
-  // Right now will only watch for close bushes, nearby requires movement in
-  // bush direction
-  vision = 1;
-
   Position ps[8]; // temp, see 8 below
   int ix[8];
   int n = 0;

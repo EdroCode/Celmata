@@ -1,3 +1,4 @@
+#include "types.h"
 #include <stdint.h>
 
 #define WHITE 0xFFFFFFFF
@@ -17,3 +18,5 @@ const uint32_t *canvas_pixels(void);
 void clear_canvas();
 void draw_pixel(int x, int y, uint32_t color);
 uint32_t get_pixel_color(int x, int y);
+void get_canvas_positions(Position *pos);
+void debug_map_details();

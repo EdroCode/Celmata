@@ -68,7 +68,7 @@
  * 2. EAT
  * ============================================================
  *
- * [ ] Check whether a bush with food is adjacent.
+ * [x] Check whether a bush with food is adjacent.
  *
  * [ ] Check whether any wolf is within perception radius.
  *
