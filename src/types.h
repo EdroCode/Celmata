@@ -17,8 +17,9 @@ typedef struct Genes {
 #define H 100
 #define SCALE 10
 
-#define INIT_BUNNY_COUNT 100
+#define INIT_BUNNY_COUNT 400
 #define INIT_BUSH_COUNT 150
+#define INIT_WOLF_COUNT 50
 
 #define GAME_SPEED 0.1f // default 0.1
 

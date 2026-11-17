@@ -1,6 +1,7 @@
 #include "src/drawing/canvas.h"
 #include "src/entities/bunny/bunny.h"
 #include "src/entities/bush/bush.h"
+#include "src/entities/wolf/wolf.h"
 #include "src/game_loop.h"
 #include "types.h"
 #include <SDL2/SDL.h>
@@ -33,6 +34,9 @@ int main(int argc, char *argv[]) {
   // BUNNIES
   void *b_list = create_bunnies(INIT_BUNNY_COUNT);
 
+  // WOLFS
+  void *wf_list = create_wolf_pack(INIT_WOLF_COUNT);
+
   // GAME
   int running = 1, loops = 0;
 
@@ -45,7 +49,7 @@ int main(int argc, char *argv[]) {
       if (e.type == SDL_QUIT)
         running = 0;
 
-    game_loop(bs_list, b_list);
+    game_loop(bs_list, b_list, wf_list);
 
     SDL_UpdateTexture(tex, NULL, canvas_pixels(), W * 4);
     SDL_RenderCopy(ren, tex, NULL, NULL);

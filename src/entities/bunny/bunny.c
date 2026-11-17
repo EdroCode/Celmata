@@ -194,6 +194,8 @@ static void process_bunny(int bunny_id, BunnyList *list) {
   }
 
   if (check_bush_surroundings(list, &b->pos, bunny_id, b->genes.vision, NULL)) {
+
+    int out[12];
     b->energy += 10; // TODO
   }
 

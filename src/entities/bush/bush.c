@@ -14,7 +14,7 @@ int bush_in_p(BushList *bs_list, Position p) {
 }
 
 static void initialize_bush(Bush *bs, Position *p) {
-  bs->food = 100;
+  bs->food = 100; // TODO
   bs->pos.x = p->x;
   bs->pos.y = p->y;
 }
@@ -135,7 +135,7 @@ void update_bushes(BushList *list) {
 }
 
 void draw_bushes(BushList *list) {
-  for (int i = 0; i < list->bush_count; i++)
+  for (int i = 0; i < list->bush_count && list->bushes[i].food > 0; i++)
     draw_pixel(list->bushes[i].pos.x, list->bushes[i].pos.y, GREEN);
 }
 
