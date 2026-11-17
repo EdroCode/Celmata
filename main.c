@@ -1,4 +1,5 @@
 #include "src/drawing/canvas.h"
+#include "src/drawing/stats/stats.h"
 #include "src/entities/bunny/bunny.h"
 #include "src/entities/bush/bush.h"
 #include "src/entities/wolf/wolf.h"
@@ -14,9 +15,15 @@ int main(int argc, char *argv[]) {
   (void)argv;
 
   SDL_Init(SDL_INIT_VIDEO);
+  init_stats_ui();
+
+  int sim_w = W * SCALE;
+  int sim_h = H * SCALE;
+  int total_w = sim_w + SIDEBAR_WIDTH;
+
   SDL_Window *win =
-      SDL_CreateWindow("Simple", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                       W * SCALE, H * SCALE, 0);
+      SDL_CreateWindow("Celmata - Ecosystem Simulator", SDL_WINDOWPOS_CENTERED,
+                       SDL_WINDOWPOS_CENTERED, total_w, sim_h, 0);
   SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_PRESENTVSYNC);
 
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"); // sharp pixels, no blur
@@ -25,9 +32,6 @@ int main(int argc, char *argv[]) {
 
   srand((unsigned int)time(NULL));
 
-  SDL_RenderPresent(ren);
-
-  ;
   // BUSHES
   void *bs_list = create_bushes(INIT_BUSH_COUNT);
 
@@ -51,13 +55,20 @@ int main(int argc, char *argv[]) {
 
     game_loop(bs_list, b_list, wf_list);
 
+    SDL_SetRenderDrawColor(ren, 26, 28, 35, 255);
+    SDL_RenderClear(ren);
+
     SDL_UpdateTexture(tex, NULL, canvas_pixels(), W * 4);
-    SDL_RenderCopy(ren, tex, NULL, NULL);
+    SDL_Rect sim_dst = {0, 0, sim_w, sim_h};
+    SDL_RenderCopy(ren, tex, NULL, &sim_dst);
+
+    render_stats_ui(ren, sim_w, sim_h, loops, b_list, bs_list, wf_list);
+
     SDL_RenderPresent(ren);
 
     loops++;
     clear_canvas();
-    SDL_Delay(GAME_SPEED * 1000);
+    SDL_Delay((Uint32)(GAME_SPEED * 1000));
   }
 
   printf("Stopped at tick %d\n", loops);
@@ -67,6 +78,7 @@ int main(int argc, char *argv[]) {
   SDL_DestroyTexture(tex);
   SDL_DestroyRenderer(ren);
   SDL_DestroyWindow(win);
+  cleanup_stats_ui();
   SDL_Quit();
   return 0;
 }

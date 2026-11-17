@@ -1,6 +1,6 @@
 CC      = gcc
 CFLAGS = -Isrc -Wall -Wextra -g $(shell sdl2-config --cflags)
-LDLIBS  = $(shell sdl2-config --libs) -lm
+LDLIBS  = $(shell sdl2-config --libs) -lSDL2_ttf -lm
 TARGET  = celmata
 
 SRC = main.c $(shell find src -name '*.c')

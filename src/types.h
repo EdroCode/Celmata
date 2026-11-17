@@ -15,7 +15,7 @@ typedef struct Genes {
 
 #define W 100
 #define H 100
-#define SCALE 10
+#define SCALE 20
 
 #define INIT_BUNNY_COUNT 400
 #define INIT_BUSH_COUNT 150
