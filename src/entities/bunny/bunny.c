@@ -1,6 +1,7 @@
 #include "bunny_internal.h"
 #include "drawing/canvas.h"
 #include "utils/utils.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -143,10 +144,13 @@ void destroy_bunnies(BunnyList *list) {
   free(list);
 }
 
-static void metabolism(Bunny *b) {
-  b->energy -=
-      0.5f + 0.15f * b->genes.vision + 0.2f * b->genes.speed * b->genes.speed;
+static void metabolism(Bunny *b, int moved) {
+  float BASE_COST = 0.5f;
+  float VISION_COST = b->genes.vision + 0.15f;
+  float MOVE_COST = moved ? 0.2f * pow(b->genes.speed, 2) : 0;
+  b->energy -= BASE_COST + VISION_COST + MOVE_COST;
   b->age++;
+  b->repro_cooldown = fmax(0, b->repro_cooldown - 1);
   if (b->energy <= 0 || b->age > 150)
     b->alive = 0;
 }
