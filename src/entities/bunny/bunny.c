@@ -5,6 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MAX_ENERGY 100
+#define MATURITY 20
+#define REPRO_CHANCE 0.10f
+#define REPRO_COST 30
+#define REPRO_COOLDOWN 5
+#define NEWBORN_ENERGY 25
+#define MUTATION_CHANCE 0.05f
 /**
  * BUNNY RULES v3
  *
@@ -77,6 +84,15 @@
  * 0.9) attack_success = wolf.hunger * (1 - escape)  // wolf.hunger = 1 -
  * wolf.energy / MAX success -> bunny.alive = false, wolf.energy += bunny_value
  */
+static Genes mutate(Genes g) {
+  g.fear += fmax(1, ((float)rand() / RAND_MAX - 0.5f) * 0.4f);
+  g.herd += fmax(1, ((float)rand() / RAND_MAX - 0.5f) * 0.4f);
+  g.speed += fmax(1, ((float)rand() / RAND_MAX - 0.5f) * 0.4f);
+  g.vision += fmax(1, ((float)rand() / RAND_MAX - 0.5f) * 0.4f);
+
+  return g;
+}
+
 Bunny *add_new_bunny(BunnyList *list, Position pos, Genes genes, float energy) {
   int slot = -1;
 
@@ -94,14 +110,17 @@ Bunny *add_new_bunny(BunnyList *list, Position pos, Genes genes, float energy) {
   }
 
   Bunny *b = &list->bunnies[slot];
-  *b = (Bunny){
-      .alive = 1, .hp = 100, .energy = energy, .genes = genes, .pos = pos};
+  *b = (Bunny){.alive = 1,
+               .hp = 100,
+               .energy = NEWBORN_ENERGY,
+               .genes = mutate(genes),
+               .pos = pos};
   return b;
 }
 
 static void initialize_bunny(Bunny *b) {
   b->alive = 1;
-  b->energy = 100;
+  b->energy = MAX_ENERGY;
   b->hp = 100;
   b->age = 0;
   b->repro_cooldown = 0;
@@ -156,11 +175,14 @@ static void metabolism(Bunny *b, int moved) {
 }
 
 static void reproduce(BunnyList *b_list, Bunny *b, Position p) {
+  b->energy -= REPRO_COST;
+  b->repro_cooldown = REPRO_COOLDOWN;
   add_new_bunny(b_list, p, b->genes, 100);
 }
 
 static void process_bunny(int bunny_id, BunnyList *list) {
   Bunny *b = &list->bunnies[bunny_id];
+  int moved = 0;
 
   if (!b->alive)
     return;
@@ -178,21 +200,27 @@ static void process_bunny(int bunny_id, BunnyList *list) {
     int n = check_surroundings(list, &b->pos, bunny_id, b->genes.vision,
                                b_surround);
 
-    if (n >= 2 && (float)rand() / RAND_MAX < 0.10f) {
-
+    float local_density = n / 8; // REVIEW: bunnies_in_radius / cells_in_radius
+    // Atleast one bunny near
+    if (n >= 1 &&
+        (float)rand() / RAND_MAX < REPRO_CHANCE * (1 - local_density)) {
       Position valid_pos[8];
 
       int pn = bunny_check_empty_surroundings(list, &b->pos, b->genes.vision,
                                               valid_pos, 8);
-
+      // Atleast an empty near cell
       if (pn > 0) {
         int ix = rand() % pn;
-        reproduce(list, b, valid_pos[ix]);
+        if (b->age >= MATURITY && b->energy >= 0.7 * MAX_ENERGY &&
+            b->repro_cooldown == 0) {
+          reproduce(list, b, valid_pos[ix]);
+        }
       }
     }
 
     if (!check_cell(list, &target)) {
       b->pos = target;
+      moved = 1;
       break;
     }
   }
@@ -203,7 +231,7 @@ static void process_bunny(int bunny_id, BunnyList *list) {
     b->energy += 10; // TODO
   }
 
-  metabolism(b);
+  metabolism(b, moved);
 }
 
 void update_bunnies(BunnyList *list) {
@@ -223,9 +251,45 @@ void update_bunnies(BunnyList *list) {
 
   free(order);
 }
+static int get_king_bunny(const BunnyList *list) {
+  if (list == NULL)
+    return -1;
+
+  int king = -1;
+  float best = -1e30f;
+
+  for (int i = 0; i < list->bunny_count; i++) {
+    const Bunny *b = &list->bunnies[i];
+    if (!b->alive)
+      continue;
+
+    float score =
+        b->genes.speed + b->genes.vision + b->hp * 0.01f - b->age * 0.01f;
+
+    if (score > best) {
+      best = score;
+      king = i;
+    }
+  }
+  return king;
+}
 
 void draw_bunnies(const BunnyList *list) {
-  for (int i = 0; i < list->bunny_count; i++)
-    if (list->bunnies[i].alive)
-      draw_pixel(list->bunnies[i].pos.x, list->bunnies[i].pos.y, WHITE);
+  if (!list)
+    return;
+
+  int king = get_king_bunny(list);
+
+  for (int i = 0; i < list->bunny_count; i++) {
+    const Bunny *b = &list->bunnies[i];
+    if (!b->alive || i == king)
+      continue;
+    draw_pixel(b->pos.x, b->pos.y, CYAN);
+  }
+
+  if (king != -1) {
+    const Bunny *k = &list->bunnies[king];
+    draw_pixel(k->pos.x, k->pos.y, WHITE);
+    draw_pixel(k->pos.x, k->pos.y - 1, YELLOW);
+  }
 }

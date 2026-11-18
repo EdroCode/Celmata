@@ -144,32 +144,32 @@
  * 4. REPRODUCTION
  * ============================================================
  *
- * [ ] Check all reproduction requirements:
- *     [ ] age >= MATURITY
- *     [ ] energy > 70% of MAX_ENERGY
- *     [ ] repro_cooldown == 0
- *     [ ] At least one adult bunny is adjacent.
- *     [ ] At least one free adjacent cell exists.
+ * [x] Check all reproduction requirements:
+ *     [x] age >= MATURITY
+ *     [x] energy > 70% of MAX_ENERGY
+ *     [x] repro_cooldown == 0
+ *     [x] At least one adult bunny is adjacent.
+ *     [x] At least one free adjacent cell exists.
  *
- * [ ] Calculate reproduction probability:
+ * [x] Calculate reproduction probability:
  *     chance = BASE_P * (1 - local_density)
  *     // Crowding lowers birth probability.
  *
- * [ ] Roll reproduction chance.
+ * [x] Roll reproduction chance.
  *
  * [ ] On successful reproduction:
- *     [ ] Subtract REPRO_COST from parent energy.
+ *     [x] Subtract REPRO_COST from parent energy.
  *
- *     [ ] Create child bunny.
- *     [ ] Set child.energy = NEWBORN_ENERGY.
+ *     [x] Create child bunny.
+ *     [x] Set child.energy = NEWBORN_ENERGY.
  *
- *     [ ] Inherit parent genes.
+ *     [x] Inherit parent genes.
  *     [ ] Mutate inherited genes.
  *
- *     [ ] Find a random free adjacent cell.
- *     [ ] Spawn child in that cell.
+ *     [x] Find a random free adjacent cell.
+ *     [x] Spawn child in that cell.
  *
- *     [ ] Set parent repro_cooldown = REPRO_COOLDOWN.
+ *     [x] Set parent repro_cooldown = REPRO_COOLDOWN.
  *
  * ============================================================
  * 5. METABOLISM
