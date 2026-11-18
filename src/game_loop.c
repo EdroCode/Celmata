@@ -5,7 +5,7 @@
 int game_loop(void *bushes, void *bunnies, void *wolf_pack) {
   // GAME
   // print_bunnies(bunnies);
-  print_bunny_count(bunnies);
+  print_bunny_csv(bunnies);
   // LOOP: INPUT -> UPADTE -> RENDER
   // UPDATE BUSHES
   update_bushes(bushes);
@@ -16,4 +16,5 @@ int game_loop(void *bushes, void *bunnies, void *wolf_pack) {
   // UPDATE WOLFS
   update_wolfs(wolf_pack);
   draw_wolfs(wolf_pack);
+  return 0;
 }

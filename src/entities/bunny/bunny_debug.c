@@ -39,3 +39,7 @@ void print_bunnies(const BunnyList *list) {
 void print_bunny_count(BunnyList *b_list) {
   printf("Bunny Alive Count: %d \n", get_bunnies(b_list, 1));
 }
+
+void print_bunny_csv(BunnyList *b_list) {
+  printf("%d,", get_bunnies(b_list, 1));
+}

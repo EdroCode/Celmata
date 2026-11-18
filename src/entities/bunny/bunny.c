@@ -2,7 +2,6 @@
 #include "drawing/canvas.h"
 #include "utils/utils.h"
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #define BASE_COST 0.5f
