@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
   SDL_Window *win =
       SDL_CreateWindow("Celmata - Ecosystem Simulator", SDL_WINDOWPOS_CENTERED,
                        SDL_WINDOWPOS_CENTERED, total_w, sim_h, 0);
-  SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_PRESENTVSYNC);
+  SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"); // sharp pixels, no blur
   SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888,

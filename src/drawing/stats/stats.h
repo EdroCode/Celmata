@@ -6,7 +6,6 @@
 #include "entities/wolf/wolf.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-
 #define SIDEBAR_WIDTH 180
 
 int init_stats_ui(void);

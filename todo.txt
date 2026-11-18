@@ -239,4 +239,8 @@
  * ============================================================
  * END OF BUNNY RULES v3
  * ============================================================
+    [ ] 
+  Old bunnies should become more vulnerable to starvation
+  and predators, reflecting their age naturally:
+ 
  */

@@ -104,7 +104,7 @@ BushList *create_bushes(int size) {
   list->bush_count = size;
   list->bush_capacity = capacity;
 
-  bush_generator(list, 2);
+  bush_generator(list, GENERATION_TYPE);
   return list;
 }
 

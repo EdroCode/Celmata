@@ -1,7 +1,5 @@
 #include "stats.h"
 #include "drawing/canvas.h"
-#include "entities/bunny/bunny.h"
-#include "entities/wolf/wolf.h"
 #include <stdio.h>
 
 static TTF_Font *font_header = NULL;

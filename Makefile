@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS = -Isrc -Wall -Wextra -g $(shell sdl2-config --cflags)
+CFLAGS = -Isrc -Wall -Wextra -O3 -march=native -flto -g $(shell sdl2-config --cflags)
 LDLIBS  = $(shell sdl2-config --libs) -lSDL2_ttf -lm
 TARGET  = celmata
 

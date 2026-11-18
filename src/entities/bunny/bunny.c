@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define BASE_COST 0.5f
+#define BASE_ENERGY 30
 #define MAX_ENERGY 100
 #define MATURITY 20
 #define REPRO_CHANCE 0.10f
@@ -12,6 +14,9 @@
 #define REPRO_COOLDOWN 5
 #define NEWBORN_ENERGY 25
 #define MUTATION_CHANCE 0.05f
+#define OLD_AGE 90
+#define MAX_AGE 150
+
 /**
  * BUNNY RULES v3
  *
@@ -120,7 +125,7 @@ Bunny *add_new_bunny(BunnyList *list, Position pos, Genes genes, float energy) {
 
 static void initialize_bunny(Bunny *b) {
   b->alive = 1;
-  b->energy = MAX_ENERGY;
+  b->energy = BASE_ENERGY;
   b->hp = 100;
   b->age = 0;
   b->repro_cooldown = 0;
@@ -164,9 +169,16 @@ void destroy_bunnies(BunnyList *list) {
 }
 
 static void metabolism(Bunny *b, int moved) {
-  float BASE_COST = 0.5f;
   float VISION_COST = b->genes.vision + 0.15f;
   float MOVE_COST = moved ? 0.2f * pow(b->genes.speed, 2) : 0;
+
+  if (b->age >= OLD_AGE) {
+    float death_chance = (float)(b->age - OLD_AGE) / (MAX_AGE - OLD_AGE);
+    if (((float)rand() / RAND_MAX) < death_chance * 0.15f) { // review this 0.15
+      b->alive = 0;
+      return;
+    }
+  }
   b->energy -= BASE_COST + VISION_COST + MOVE_COST;
   b->age++;
   b->repro_cooldown = fmax(0, b->repro_cooldown - 1);
@@ -203,7 +215,8 @@ static void process_bunny(int bunny_id, BunnyList *list) {
     float local_density = n / 8; // REVIEW: bunnies_in_radius / cells_in_radius
     // Atleast one bunny near
     if (n >= 1 &&
-        (float)rand() / RAND_MAX < REPRO_CHANCE * (1 - local_density)) {
+        (float)rand() / RAND_MAX < REPRO_CHANCE * (1 - local_density) &&
+        b->energy > REPRO_COST) {
       Position valid_pos[8];
 
       int pn = bunny_check_empty_surroundings(list, &b->pos, b->genes.vision,
