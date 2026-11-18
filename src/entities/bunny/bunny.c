@@ -251,7 +251,8 @@ void update_bunnies(BunnyList *list) {
 
   free(order);
 }
-static int get_king_bunny(const BunnyList *list) {
+
+int get_king_bunny(const BunnyList *list) {
   if (list == NULL)
     return -1;
 
@@ -274,6 +275,19 @@ static int get_king_bunny(const BunnyList *list) {
   return king;
 }
 
+int get_king_bunny_stats(const BunnyList *list, Genes *genes, int *age) {
+  int king = get_king_bunny(list);
+  if (king < 0)
+    return -1;
+
+  const Bunny *kb = &list->bunnies[king];
+  if (genes)
+    *genes = kb->genes;
+  if (age)
+    *age = kb->age;
+  return king;
+}
+
 void draw_bunnies(const BunnyList *list) {
   if (!list)
     return;
@@ -292,4 +306,16 @@ void draw_bunnies(const BunnyList *list) {
     draw_pixel(k->pos.x, k->pos.y, WHITE);
     draw_pixel(k->pos.x, k->pos.y - 1, YELLOW);
   }
+}
+
+int get_alive_bunnies_count(const BunnyList *list) {
+  if (!list)
+    return 0;
+
+  int alive = 0;
+  for (int i = 0; i < list->bunny_count; i++) {
+    if (list->bunnies[i].alive)
+      alive++;
+  }
+  return alive;
 }

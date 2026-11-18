@@ -101,3 +101,15 @@ void draw_wolfs(const WolfList *list) {
     if (list->wolf_pack[i].alive)
       draw_pixel(list->wolf_pack[i].pos.x, list->wolf_pack[i].pos.y, RED);
 }
+
+int get_alive_wolves_count(const WolfList *list) {
+  if (!list)
+    return 0;
+
+  int alive = 0;
+  for (int i = 0; i < list->wolf_count; i++) {
+    if (list->wolf_pack[i].alive)
+      alive++;
+  }
+  return alive;
+}

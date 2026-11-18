@@ -1,7 +1,7 @@
 #include "stats.h"
 #include "drawing/canvas.h"
-#include "entities/bunny/bunny_internal.h"
-#include "entities/wolf/wolf_internal.h"
+#include "entities/bunny/bunny.h"
+#include "entities/wolf/wolf.h"
 #include <stdio.h>
 
 static TTF_Font *font_header = NULL;
@@ -78,13 +78,7 @@ void render_stats_ui(SDL_Renderer *renderer, int canvas_screen_width,
   SDL_RenderDrawLine(renderer, start_x, 0, start_x, window_height);
 
   // Count active entities
-  int alive_bunnies = 0;
-  if (bunnies) {
-    for (int i = 0; i < bunnies->bunny_count; i++) {
-      if (bunnies->bunnies[i].alive)
-        alive_bunnies++;
-    }
-  }
+  int alive_bunnies = get_alive_bunnies_count(bunnies);
 
   int alive_bushes = 0;
   if (bushes) {
@@ -94,13 +88,7 @@ void render_stats_ui(SDL_Renderer *renderer, int canvas_screen_width,
     }
   }
 
-  int alive_wolves = 0;
-  if (wolves) {
-    for (int i = 0; i < wolves->wolf_count; i++) {
-      if (wolves->wolf_pack[i].alive)
-        alive_wolves++;
-    }
-  }
+  int alive_wolves = get_alive_wolves_count(wolves);
 
   int x = start_x + 16;
   int y = 24;
@@ -147,4 +135,50 @@ void render_stats_ui(SDL_Renderer *renderer, int canvas_screen_width,
   snprintf(buf, sizeof(buf), "Wolves: %d", alive_wolves);
   draw_text(renderer, font_item, buf, x + 16, y,
             (SDL_Color){255, 120, 120, 255});
+  y += 25;
+
+  // Divider
+  SDL_SetRenderDrawColor(renderer, 40, 44, 54, 255);
+  SDL_RenderDrawLine(renderer, x, y, start_x + panel_w - 16, y);
+  y += 20;
+
+  // King Bunny
+  SDL_Color col_white = {255, 255, 255, 255};
+  SDL_Color col_yellow = {255, 220, 0, 255};
+
+  SDL_Rect dot_king = {x, y + 4, 8, 8};
+  SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+  SDL_RenderFillRect(renderer, &dot_king);
+
+  Genes kg;
+  int king_age = 0;
+  int k = get_king_bunny_stats(bunnies, &kg, &king_age);
+  if (k >= 0) {
+    snprintf(buf, sizeof(buf), "KING BUNNY (%d)", k);
+    draw_text(renderer, font_item, buf, x + 16, y, col_white);
+    y += 22;
+
+    snprintf(buf, sizeof(buf), "age    %d", king_age);
+    draw_text(renderer, font_item, buf, x + 16, y, col_yellow);
+    y += 20;
+
+    snprintf(buf, sizeof(buf), "speed  %.2f", kg.speed);
+    draw_text(renderer, font_item, buf, x + 16, y, col_yellow);
+    y += 20;
+
+    snprintf(buf, sizeof(buf), "vision %.2f", kg.vision);
+    draw_text(renderer, font_item, buf, x + 16, y, col_yellow);
+    y += 20;
+
+    snprintf(buf, sizeof(buf), "fear   %.2f", kg.fear);
+    draw_text(renderer, font_item, buf, x + 16, y, col_yellow);
+    y += 20;
+
+    snprintf(buf, sizeof(buf), "herd   %.2f", kg.herd);
+    draw_text(renderer, font_item, buf, x + 16, y, col_yellow);
+    y += 28;
+  } else {
+    draw_text(renderer, font_item, "KING BUNNY: none", x + 16, y, col_white);
+    y += 28;
+  }
 }
