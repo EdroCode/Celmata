@@ -7,3 +7,6 @@ void shuffle(int *a, int n);
 // Returns how many were written (at most max_out).
 int find_within(const Position *pts, int n, const Position *p, int radius,
                 int *out, int max_out);
+
+int max_int(int a, int b);
+int min_int(int a, int b);

@@ -89,12 +89,23 @@
  * 0.9) attack_success = wolf.hunger * (1 - escape)  // wolf.hunger = 1 -
  * wolf.energy / MAX success -> bunny.alive = false, wolf.energy += bunny_value
  */
-static Genes mutate(Genes g) {
-  g.fear += fmax(1, ((float)rand() / RAND_MAX - 0.5f) * 0.4f);
-  g.herd += fmax(1, ((float)rand() / RAND_MAX - 0.5f) * 0.4f);
-  g.speed += fmax(1, ((float)rand() / RAND_MAX - 0.5f) * 0.4f);
-  g.vision += fmax(1, ((float)rand() / RAND_MAX - 0.5f) * 0.4f);
+static float mutate_gene(float val, float min_val, float max_val) {
+  if ((float)rand() / RAND_MAX < MUTATION_CHANCE) {
+    float delta = ((float)rand() / RAND_MAX - 0.5f) * 0.4f; // ±0.2
+    val += delta;
+    if (val < min_val)
+      val = min_val;
+    if (val > max_val)
+      val = max_val;
+  }
+  return val;
+}
 
+static Genes mutate(Genes g) {
+  g.fear = mutate_gene(g.fear, 0.2f, 5.0f);
+  g.herd = mutate_gene(g.herd, 0.2f, 5.0f);
+  g.speed = mutate_gene(g.speed, 0.5f, 3.0f);
+  g.vision = mutate_gene(g.vision, 1.0f, 6.0f);
   return g;
 }
 
@@ -125,9 +136,9 @@ Bunny *add_new_bunny(BunnyList *list, Position pos, Genes genes, float energy) {
 
 static void initialize_bunny(Bunny *b) {
   b->alive = 1;
-  b->energy = BASE_ENERGY;
+  b->energy = BASE_ENERGY + (rand() % 30);
   b->hp = 100;
-  b->age = 0;
+  b->age = rand() % 60;
   b->repro_cooldown = 0;
   b->move_budget = 0;
   b->genes = (Genes){.vision = 1, .speed = 1, .fear = 1, .herd = 1};
@@ -169,7 +180,7 @@ void destroy_bunnies(BunnyList *list) {
 }
 
 static void metabolism(Bunny *b, int moved) {
-  float VISION_COST = b->genes.vision + 0.15f;
+  float VISION_COST = b->genes.vision * 0.15f;
   float MOVE_COST = moved ? 0.2f * pow(b->genes.speed, 2) : 0;
 
   if (b->age >= OLD_AGE) {
@@ -181,7 +192,7 @@ static void metabolism(Bunny *b, int moved) {
   }
   b->energy -= BASE_COST + VISION_COST + MOVE_COST;
   b->age++;
-  b->repro_cooldown = fmax(0, b->repro_cooldown - 1);
+  b->repro_cooldown = max_int(0, b->repro_cooldown - 1);
   if (b->energy <= 0 || b->age > 150)
     b->alive = 0;
 }
@@ -212,7 +223,8 @@ static void process_bunny(int bunny_id, BunnyList *list) {
     int n = check_surroundings(list, &b->pos, bunny_id, b->genes.vision,
                                b_surround);
 
-    float local_density = n / 8; // REVIEW: bunnies_in_radius / cells_in_radius
+    float local_density =
+        n / 8.0f; // REVIEW: bunnies_in_radius / cells_in_radius
     // Atleast one bunny near
     if (n >= 1 &&
         (float)rand() / RAND_MAX < REPRO_CHANCE * (1 - local_density) &&
@@ -239,9 +251,7 @@ static void process_bunny(int bunny_id, BunnyList *list) {
   }
 
   if (check_bush_surroundings(list, &b->pos, bunny_id, b->genes.vision, NULL)) {
-
-    int out[12];
-    b->energy += 10; // TODO
+    b->energy = min_int(MAX_ENERGY, b->energy + 3); // TODO
   }
 
   metabolism(b, moved);

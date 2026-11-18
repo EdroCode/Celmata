@@ -14,3 +14,6 @@ int find_within(const Position *pts, int n, const Position *p, int radius,
   }
   return count;
 }
+
+int max_int(int a, int b) { return a > b ? a : b; }
+int min_int(int a, int b) { return a < b ? a : b; }

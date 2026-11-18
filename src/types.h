@@ -18,10 +18,10 @@ typedef struct Genes {
 #define SCALE 10
 
 #define INIT_BUNNY_COUNT 200
-#define INIT_BUSH_COUNT 20
+#define INIT_BUSH_COUNT 120
 #define INIT_WOLF_COUNT 1
 
-#define GENERATION_TYPE 1 // 1 - Random 2 - Cluster
+#define GENERATION_TYPE 2 // 1 - Random 2 - Cluster
 
 #define GAME_SPEED 0.1f // default 0.1
 
