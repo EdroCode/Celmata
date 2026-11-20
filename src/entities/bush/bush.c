@@ -27,6 +27,7 @@ static void initialize_bush(Bush *bs, Position *p) {
   bs->pos.y = p->y;
 }
 
+static void hotspot_gen(BushList *bs_list, int radius, int spots) {} // TODO
 /** \brief Generate clustered bushes.
  *  \param bs_list Target BushList.
  *  \param initial_seeds Number of seed bushes.
